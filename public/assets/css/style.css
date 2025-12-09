@@ -1,0 +1,44 @@
+/*
+Template Name: Ubold - Responsive Bootstrap 5 Admin Dashboard
+Version: 6.1.0
+Author: Techzaa
+Email: support@Techzaa.com
+File: Main Css File
+*/
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;500;600;700;800&display=swap");
+@import url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+html {
+  @apply relative scroll-smooth;
+}
+
+body {
+  font-size: 15px;
+  @apply font-body overflow-x-hidden text-gray-700;
+}
+
+@supports (-webkit-overflow-scrolling: touch) {
+  body {
+    cursor: pointer;
+  }
+}
+input,
+textarea,
+button,
+select,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-semibold;
+}
+
+/*# sourceMappingURL=style.css.map */
