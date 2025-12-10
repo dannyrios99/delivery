@@ -74,10 +74,12 @@ Route::middleware('auth')->group(function () {
 
     // Ventas
     Route::get('/ventas', [VentasController::class, 'index'])->name('ventas.index');
+    Route::get('/ventas/metricas', [VentasController::class, 'metricas'])->name('ventas.metricas');
 
     // Ventas Inout
     Route::get('/ventas/inout', [VentasInoutController::class, 'index'])->name('ventas.inout');
-    Route::get('/ventas/inout/graficos', [VentasController::class, 'graficos'])->name('ventas.inout.graficos');
+    Route::get('/ventas/inout/dashboard', [VentasInoutController::class, 'dashboard'])->name('ventas.inout.dashboard');
+    Route::get('/ventas/inout/graficas', [VentasInoutController::class, 'graficas'])->name('ventas.inout.graficas');
     Route::get('/ventas/inout/data', [VentasInoutController::class, 'inoutData'])->name('ventas.inout.data');
 
 

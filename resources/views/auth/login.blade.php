@@ -228,7 +228,6 @@
 </html>
 <style>
     /* Estilos para el contenedor del loader */
-    /* Estilos para el contenedor del loader */
     .loader-container {
         display: flex;
         justify-content: center;

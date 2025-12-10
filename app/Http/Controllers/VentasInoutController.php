@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Http\Request;
 
 class VentasInoutController extends Controller
 {
@@ -48,94 +49,144 @@ class VentasInoutController extends Controller
             ->make(true);
     }
 
-    // ============================
-    // VISTA DE GRÁFICAS
-    // ============================
-    public function graficos()
+    public function dashboard(Request $request)
     {
-        $db = DB::connection('inout');
-        $estados = ['Entregado', 'Reparto', 'Cerrado con novedad'];
+        // Por defecto, mostrar últimos 7 días
+        $defaultTo   = now()->toDateString();
+        $defaultFrom = now()->subDays(6)->toDateString();
 
-        $desde14d = now()->subDays(14)->startOfDay();
-        $desde6w  = now()->subWeeks(6)->startOfWeek();
-        $desde6m  = now()->subMonths(6)->startOfMonth();
+        return view('ventas.inout-dashboard', [
+            'defaultFrom' => $defaultFrom,
+            'defaultTo'   => $defaultTo,
+        ]);
+    }
 
-        // Distribución
-        $distribucionPuntos = $db->table('orders_hotamericas')
-            ->selectRaw('pointSaleCode, pointSale, COUNT(*) as total')
-            ->whereIn('stateCurrent', $estados)
-            ->where('createdAt', '>=', $desde14d)
-            ->groupBy('pointSaleCode', 'pointSale')
-            ->orderBy('total','DESC')
-            ->limit(10)
+    public function graficas(Request $request)
+    {
+        $from = $request->get('from');
+        $to   = $request->get('to');
+
+        if (!$from || !$to) {
+            return response()->json(['error' => 'Rango de fechas requerido'], 422);
+        }
+
+        // Estados finales reales de la tabla
+        $estadosFinales = ['Entregado', 'Reparto', 'Cerrado con novedad'];
+
+        // Conexión base
+        $conn = DB::connection('inout')->table('orders_hotamericas');
+
+        // ===================================
+        // 1. Distribución por canal (platform)
+        // ===================================
+        $canal = $conn->clone()
+            ->selectRaw('platform as canal, COUNT(*) as total')
+            ->whereIn('stateCurrent', $estadosFinales)
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->groupBy('platform')
             ->get();
 
-        // Formas de pago
-        $formasPago = $db->table('orders_hotamericas')
-            ->selectRaw('paymentMethod, COUNT(*) as total')
-            ->whereIn('stateCurrent', $estados)
-            ->where('createdAt', '>=', $desde14d)
+        // =======================================
+        // 2. Órdenes por sucursal (pointSale)
+        // =======================================
+        $sucursales = $conn->clone()
+            ->selectRaw('pointSale as sucursal, COUNT(*) as total')
+            ->whereIn('stateCurrent', $estadosFinales)
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->groupBy('pointSale')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // ===================================
+        // 3. Forma de pago (paymentMethod)
+        // ===================================
+        $formasPago = $conn->clone()
+            ->selectRaw('paymentMethod as forma_pago, COUNT(*) as total')
+            ->whereIn('stateCurrent', $estadosFinales)
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->groupBy('paymentMethod')
-            ->orderBy('total','DESC')
             ->get();
 
-        // Entrega
-        $entrega = $db->table('orders_hotamericas')
-            ->selectRaw('type, COUNT(*) as total')
-            ->whereIn('stateCurrent', $estados)
-            ->where('createdAt', '>=', $desde14d)
+        // ===================================
+        // 4. Entrega (type)
+        // ===================================
+        $entrega = $conn->clone()
+            ->selectRaw('type as tipo_entrega, COUNT(*) as total')
+            ->whereIn('stateCurrent', $estadosFinales)
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->groupBy('type')
             ->get();
 
-        // Diarias
-        $ordenesDiarias = $db->table('orders_hotamericas')
+        // ===================================
+        // 5. Histórico diario
+        // ===================================
+        $historicoDiario = $conn->clone()
             ->selectRaw('DATE(createdAt) as fecha, COUNT(*) as total')
-            ->whereIn('stateCurrent', $estados)
-            ->where('createdAt', '>=', now()->subDays(14))
+            ->whereIn('stateCurrent', $estadosFinales)
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->groupBy('fecha')
             ->orderBy('fecha')
             ->get();
 
-        // Semanales
-        $ordenesSemanales = $db->table('orders_hotamericas')
-            ->selectRaw('YEARWEEK(createdAt) as semana, COUNT(*) as total')
-            ->whereIn('stateCurrent', $estados)
-            ->where('createdAt', '>=', $desde6w)
-            ->groupBy('semana')
+        // ===================================
+        // 6. Histórico semanal
+        // ===================================
+        $historicoSemanal = $conn->clone()
+            ->selectRaw('YEAR(createdAt) as anio, WEEK(createdAt, 1) as semana, COUNT(*) as total')
+            ->whereIn('stateCurrent', $estadosFinales)
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->groupBy('anio', 'semana')
+            ->orderBy('anio')
             ->orderBy('semana')
             ->get();
 
-        // Mensuales
-        $ordenesMensuales = $db->table('orders_hotamericas')
-            ->selectRaw('DATE_FORMAT(createdAt, "%Y-%m") as mes, COUNT(*) as total')
-            ->whereIn('stateCurrent', $estados)
-            ->where('createdAt', '>=', $desde6m)
-            ->groupBy('mes')
+        // ===================================
+        // 7. Histórico mensual
+        // ===================================
+        $historicoMensual = $conn->clone()
+            ->selectRaw('YEAR(createdAt) as anio, MONTH(createdAt) as mes, COUNT(*) as total')
+            ->whereIn('stateCurrent', $estadosFinales)
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->groupBy('anio', 'mes')
+            ->orderBy('anio')
             ->orderBy('mes')
             ->get();
 
-        // Canceladas
-        $canceladasTotal = $db->table('orders_hotamericas')
+        // ===================================
+        // 8. Canceladas (stateCurrent = Cancelado)
+        // ===================================
+        $canceladosBase = DB::connection('inout')
+            ->table('orders_hotamericas')
             ->where('stateCurrent', 'Cancelado')
-            ->count();
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59']);
 
-        $canceladasPorPunto = $db->table('orders_hotamericas')
-            ->selectRaw('pointSaleCode, pointSale, COUNT(*) as total')
-            ->where('stateCurrent', 'Cancelado')
-            ->groupBy('pointSaleCode','pointSale')
-            ->orderBy('total','DESC')
-            ->limit(10)
+        $canceladasPorSucursal = $canceladosBase->clone()
+            ->selectRaw('pointSale as sucursal, COUNT(*) as total')
+            ->groupBy('pointSale')
             ->get();
 
-        return view('ventas.inout-graficos', compact(
-            'distribucionPuntos',
-            'formasPago',
-            'entrega',
-            'ordenesDiarias',
-            'ordenesSemanales',
-            'ordenesMensuales',
-            'canceladasTotal',
-            'canceladasPorPunto'
-        ));
+        $totalCanceladas = $canceladosBase->clone()
+            ->selectRaw('COUNT(*) as total_ordenes, SUM(total) as total_valor')
+            ->first();
+
+        // ===================================
+        // RESPUESTA COMPLETA
+        // ===================================
+        return response()->json([
+            'canal'      => $canal,
+            'sucursales' => $sucursales,
+            'formasPago' => $formasPago,
+            'entrega'    => $entrega,
+            'historico'  => [
+                'diario'  => $historicoDiario,
+                'semanal' => $historicoSemanal,
+                'mensual' => $historicoMensual,
+            ],
+            'canceladas' => [
+                'resumen'      => $totalCanceladas,
+                'por_sucursal' => $canceladasPorSucursal,
+            ],
+        ]);
     }
+
 }
