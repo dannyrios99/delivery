@@ -47,7 +47,7 @@
 
                     <div class="d-flex" style="gap:12px;">
                         {{-- VER GRÁFICAS --}}
-                        <a href="{{ route('ventas.inout.graficos') }}"
+                        <a href="{{ route('ventas.inout.dashboard') }}"
                            class="btn btn-orange btn-sm d-flex align-items-center"
                            style="gap:6px;">
                             <i class="fa-solid fa-chart-line"></i> Ver gráficas

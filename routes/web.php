@@ -14,6 +14,7 @@ use App\Http\Controllers\VentasController;
 use App\Http\Controllers\VentasInoutController;
 use App\Http\Controllers\DidiOrderController;
 
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -79,13 +80,14 @@ Route::middleware('auth')->group(function () {
     // Ventas Inout
     Route::get('/ventas/inout', [VentasInoutController::class, 'index'])->name('ventas.inout');
     Route::get('/ventas/inout/dashboard', [VentasInoutController::class, 'dashboard'])->name('ventas.inout.dashboard');
-    Route::get('/ventas/inout/graficas', [VentasInoutController::class, 'graficas'])->name('ventas.inout.graficos');
+    Route::get('/ventas/inout/graficas', [VentasInoutController::class, 'graficas'])->name('ventas.inout.graficas');
     Route::get('/ventas/inout/data', [VentasInoutController::class, 'inoutData'])->name('ventas.inout.data');
 
     // Ventas Didi
     Route::get('/didi', [DidiOrderController::class, 'index'])->name('didi');
     Route::post('/didi/import', [DidiOrderController::class, 'import'])->name('didi.import');
     Route::get('/didi/template', [DidiOrderController::class, 'downloadTemplate'])->name('didi.template');
+
 
     Route::get('/benchmark-inout', function () {
         try {

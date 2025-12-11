@@ -13,7 +13,7 @@ class DidiOrderController extends Controller
     public function index()
     {
         $orders = DidiOrder::orderBy('billing_time', 'desc')->get();
-        return view('ventas.didi-graficos', compact('orders'));
+        return view('ventas.didi', compact('orders'));
     }
 
     public function import(Request $request)

@@ -299,241 +299,234 @@
     {{-- SCRIPTS --}}
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
 
-            function formatDate(d) {
-                return d.toISOString().slice(0, 10);
+        // ===============================
+        // 1) FUNCIONES UTILITARIAS
+        // ===============================
+
+        function formatDate(d) {
+            const year  = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day   = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function showLoading() {
+            document.querySelectorAll('.loading-overlay').forEach(o => o.style.display = 'flex');
+            const btn = document.getElementById('btn-aplicar-rango');
+            btn.disabled = true;
+            btn.innerText = "Cargando...";
+        }
+
+        function hideLoading() {
+            document.querySelectorAll('.loading-overlay').forEach(o => o.style.display = 'none');
+            const btn = document.getElementById('btn-aplicar-rango');
+            btn.disabled = false;
+            btn.innerText = "Aplicar";
+        }
+
+        function actualizarLabelRango() {
+            const from = document.getElementById('filtro-from').value;
+            const to   = document.getElementById('filtro-to').value;
+            const label = document.getElementById('label-rango');
+
+            if (!from || !to) {
+                label.textContent = "";
+                return;
             }
 
-            function showLoading() {
-                document.querySelectorAll('.loading-overlay').forEach(o => {
-                    o.style.display = 'flex';
-                });
-
-                // Desactivar botón aplicar
-                const btn = document.getElementById('btn-aplicar-rango');
-                btn.disabled = true;
-                btn.innerText = "Cargando...";
+            function bonito(iso) {
+                const [y, m, d] = iso.split("-");
+                return `${d}/${m}/${y}`;
             }
 
-            function hideLoading() {
-                document.querySelectorAll('.loading-overlay').forEach(o => {
-                    o.style.display = 'none';
-                });
+            label.textContent = `${bonito(from)} – ${bonito(to)}`;
+        }
 
-                const btn = document.getElementById('btn-aplicar-rango');
-                btn.disabled = false;
-                btn.innerText = "Aplicar";
-            }
+        function setRange(type) {
+            const today = new Date();
+            let from, to;
 
-
-            function setRange(type) {
-                let today = new Date();
-                let from, to;
-
-                if (type === 'today') {
+            switch (type) {
+                case "today":
                     from = to = formatDate(today);
-                } else if (type === 'last7') {
-                    let d = new Date();
+                    break;
+
+                case "last7":
+                    const d = new Date();
                     d.setDate(today.getDate() - 6);
                     from = formatDate(d);
-                    to = formatDate(today);
-                } else if (type === 'month') {
-                    let first = new Date(today.getFullYear(), today.getMonth(), 1);
-                    from = formatDate(first);
-                    to = formatDate(today);
-                } else if (type === 'prevMonth') {
-                    let firstPrev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                    let lastPrev = new Date(today.getFullYear(), today.getMonth(), 0);
-                    from = formatDate(firstPrev);
-                    to = formatDate(lastPrev);
-                }
+                    to   = formatDate(today);
+                    break;
 
-                document.getElementById('filtro-from').value = from;
-                document.getElementById('filtro-to').value = to;
+                case "month":
+                    const first = new Date(today.getFullYear(), today.getMonth(), 1);
+                    from = formatDate(first);
+                    to   = formatDate(today);
+                    break;
+
+                case "prevMonth":
+                    const firstPrev = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    const lastPrev  = new Date(today.getFullYear(), today.getMonth(), 0);
+                    from = formatDate(firstPrev);
+                    to   = formatDate(lastPrev);
+                    break;
             }
 
-            document.querySelectorAll('.rango-btn, .rango-rapido').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    setRange(this.dataset.range);
-                    actualizarLabelRango();
-                    loadGraficas();   
-                });
-            });
+            document.getElementById('filtro-from').value = from;
+            document.getElementById('filtro-to').value   = to;
 
-            document.getElementById('btn-aplicar-rango').addEventListener('click', function () {
-                actualizarLabelRango();   // <-- nuevo
+            actualizarLabelRango();
+        }
+
+        // ===============================
+        // 2) LISTENERS DE RANGOS
+        // ===============================
+
+        document.querySelectorAll('.rango-rapido').forEach(btn => {
+            btn.addEventListener('click', function () {
+                setRange(this.dataset.range);
                 loadGraficas();
             });
+        });
 
+        document.getElementById('btn-aplicar-rango').addEventListener('click', function () {
+            actualizarLabelRango();
+            loadGraficas();
+        });
 
-            // ---------------------
-            // Inicialización charts
-            // ---------------------
-            const chartCanal = new ApexCharts(document.querySelector("#chart-canal"), {
-                chart: { type: 'pie', height: 260 },
-                series: [],
-                labels: [],
-                legend: { position: 'bottom' }
-            });
-            chartCanal.render();
+        // ===============================
+        // 3) INICIALIZACIÓN DE GRÁFICAS
+        // ===============================
 
-            const chartSucursales = new ApexCharts(document.querySelector("#chart-sucursales"), {
-                chart: { type: 'bar', height: 300 },
-                plotOptions: { bar: { horizontal: true } },
-                xaxis: { categories: [] },
-                series: [{ name: 'Órdenes', data: [] }]
-            });
-            chartSucursales.render();
+        const chartCanal = new ApexCharts(document.querySelector("#chart-canal"), {
+            chart: { type: 'pie', height: 260 },
+            labels: [],
+            series: [],
+            legend: { position: 'bottom' }
+        });
+        chartCanal.render();
 
-            const chartFormasPago = new ApexCharts(document.querySelector("#chart-formas-pago"), {
-                chart: { type: 'pie', height: 260 },
-                series: [],
-                labels: [],
-                legend: { position: 'bottom' }
-            });
-            chartFormasPago.render();
+        const chartSucursales = new ApexCharts(document.querySelector("#chart-sucursales"), {
+            chart: { type: 'bar', height: 300 },
+            plotOptions: { bar: { horizontal: true }},
+            xaxis: { categories: [] },
+            series: [{ name: 'Órdenes', data: [] }]
+        });
+        chartSucursales.render();
 
-            const chartEntrega = new ApexCharts(document.querySelector("#chart-entrega"), {
-                chart: { type: 'pie', height: 260 },
-                series: [],
-                labels: [],
-                legend: { position: 'bottom' }
-            });
-            chartEntrega.render();
+        const chartFormasPago = new ApexCharts(document.querySelector("#chart-formas-pago"), {
+            chart: { type: 'pie', height: 260 },
+            labels: [],
+            series: [],
+            legend: { position: 'bottom' }
+        });
+        chartFormasPago.render();
 
-            const chartHistDiario = new ApexCharts(document.querySelector("#chart-hist-diario"), {
-                chart: { type: 'line', height: 230 },
-                series: [{ name: 'Órdenes', data: [] }],
-                xaxis: { categories: [] }
-            });
-            chartHistDiario.render();
+        const chartEntrega = new ApexCharts(document.querySelector("#chart-entrega"), {
+            chart: { type: 'pie', height: 260 },
+            labels: [],
+            series: [],
+            legend: { position: 'bottom' }
+        });
+        chartEntrega.render();
 
-            const chartHistSemanal = new ApexCharts(document.querySelector("#chart-hist-semanal"), {
-                chart: { type: 'line', height: 230 },
-                series: [{ name: 'Órdenes', data: [] }],
-                xaxis: { categories: [] }
-            });
-            chartHistSemanal.render();
+        const chartHistDiario = new ApexCharts(document.querySelector("#chart-hist-diario"), {
+            chart: { type: 'line', height: 230 },
+            series: [{ name: 'Órdenes', data: [] }],
+            xaxis: { categories: [] }
+        });
+        chartHistDiario.render();
 
-            const chartHistMensual = new ApexCharts(document.querySelector("#chart-hist-mensual"), {
-                chart: { type: 'line', height: 230 },
-                series: [{ name: 'Órdenes', data: [] }],
-                xaxis: { categories: [] }
-            });
-            chartHistMensual.render();
+        const chartHistSemanal = new ApexCharts(document.querySelector("#chart-hist-semanal"), {
+            chart: { type: 'line', height: 230 },
+            series: [{ name: 'Órdenes', data: [] }],
+            xaxis: { categories: [] }
+        });
+        chartHistSemanal.render();
 
-            const chartCanceladasSucursales = new ApexCharts(document.querySelector("#chart-canceladas-sucursales"), {
-                chart: { type: 'bar', height: 260 },
-                plotOptions: { bar: { horizontal: true } },
-                series: [{ name: 'Canceladas', data: [] }],
-                xaxis: { categories: [] }
-            });
-            chartCanceladasSucursales.render();
+        const chartHistMensual = new ApexCharts(document.querySelector("#chart-hist-mensual"), {
+            chart: { type: 'line', height: 230 },
+            series: [{ name: 'Órdenes', data: [] }],
+            xaxis: { categories: [] }
+        });
+        chartHistMensual.render();
 
-            // ---------------------
-            // AJAX
-            // ---------------------
-            function loadGraficas() {
+        const chartCanceladasSucursales = new ApexCharts(document.querySelector("#chart-canceladas-sucursales"), {
+            chart: { type: 'bar', height: 260 },
+            plotOptions: { bar: { horizontal: true }},
+            xaxis: { categories: [] },
+            series: [{ name: 'Canceladas', data: [] }]
+        });
+        chartCanceladasSucursales.render();
 
-            showLoading(); // <- Agregado aquí
+        // ===============================
+        // 4) FUNCIÓN QUE TRAE LOS DATOS
+        // ===============================
+
+        function loadGraficas() {
+            showLoading();
 
             const from = document.getElementById('filtro-from').value;
             const to   = document.getElementById('filtro-to').value;
 
-            fetch("{{ route('ventas.inout.graficas') }}?from=" + from + "&to=" + to)
+            fetch(`{{ route('ventas.inout.graficas') }}?from=${from}&to=${to}`)
                 .then(res => res.json())
                 .then(data => {
 
-                        // Canal
-                        chartCanal.updateOptions({
-                            labels: data.canal.map(i => i.canal)
-                        });
-                        chartCanal.updateSeries(
-                            data.canal.map(i => Number(i.total))
-                        );
+                    chartCanal.updateOptions({ labels: data.canal.map(i => i.canal) });
+                    chartCanal.updateSeries(data.canal.map(i => Number(i.total)));
 
-                        // Sucursales
-                        chartSucursales.updateOptions({
-                            xaxis: { categories: data.sucursales.map(i => i.sucursal) }
-                        });
-                        chartSucursales.updateSeries([{
-                            name: "Órdenes",
-                            data: data.sucursales.map(i => Number(i.total))
-                        }]);
+                    chartSucursales.updateOptions({ xaxis: { categories: data.sucursales.map(i => i.sucursal) }});
+                    chartSucursales.updateSeries([{ data: data.sucursales.map(i => Number(i.total)) }]);
 
-                        // Forma de pago
-                        chartFormasPago.updateOptions({
-                            labels: data.formasPago.map(i => i.forma_pago)
-                        });
-                        chartFormasPago.updateSeries(
-                            data.formasPago.map(i => Number(i.total))
-                        );
+                    chartFormasPago.updateOptions({ labels: data.formasPago.map(i => i.forma_pago) });
+                    chartFormasPago.updateSeries(data.formasPago.map(i => Number(i.total)));
 
-                        // Entrega
-                        chartEntrega.updateOptions({
-                            labels: data.entrega.map(i => i.tipo_entrega)
-                        });
-                        chartEntrega.updateSeries(
-                            data.entrega.map(i => Number(i.total))
-                        );
+                    chartEntrega.updateOptions({ labels: data.entrega.map(i => i.tipo_entrega) });
+                    chartEntrega.updateSeries(data.entrega.map(i => Number(i.total)));
 
-                        // Histórico diario
-                        chartHistDiario.updateOptions({
-                            xaxis: { categories: data.historico.diario.map(i => i.fecha) }
-                        });
-                        chartHistDiario.updateSeries([{
-                            name: "Órdenes",
-                            data: data.historico.diario.map(i => Number(i.total))
-                        }]);
+                    chartHistDiario.updateOptions({ xaxis: { categories: data.historico.diario.map(i => i.fecha) }});
+                    chartHistDiario.updateSeries([{ data: data.historico.diario.map(i => Number(i.total)) }]);
 
-                        // Semanal
-                        chartHistSemanal.updateOptions({
-                            xaxis: { categories: data.historico.semanal.map(i => i.semana) }
-                        });
-                        chartHistSemanal.updateSeries([{
-                            name: "Órdenes",
-                            data: data.historico.semanal.map(i => Number(i.total))
-                        }]);
+                    chartHistSemanal.updateOptions({ xaxis: { categories: data.historico.semanal.map(i => i.semana) }});
+                    chartHistSemanal.updateSeries([{ data: data.historico.semanal.map(i => Number(i.total)) }]);
 
-                        // Mensual
-                        const meses = ["","Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-                        chartHistMensual.updateOptions({
-                            xaxis: { categories: data.historico.mensual.map(i => meses[i.mes]) }
-                        });
-                        chartHistMensual.updateSeries([{
-                            name: "Órdenes",
-                            data: data.historico.mensual.map(i => Number(i.total))
-                        }]);
-
-                        // Canceladas resumen
-                        document.getElementById('canceladas-total-ordenes').innerText =
-                            data.canceladas.resumen.total_ordenes ?? 0;
-
-                        document.getElementById('canceladas-total-valor').innerText =
-                            new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' })
-                            .format(data.canceladas.resumen.total_valor ?? 0);
-
-                        // Canceladas por sucursal
-                        chartCanceladasSucursales.updateOptions({
-                            xaxis: { categories: data.canceladas.por_sucursal.map(i => i.sucursal) }
-                        });
-                        chartCanceladasSucursales.updateSeries([{
-                            name: "Canceladas",
-                            data: data.canceladas.por_sucursal.map(i => Number(i.total))
-                        }]);
-
-                        hideLoading(); // <- Agregado aquí
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        hideLoading(); // <- Incluso si falla, lo oculta
+                    const meses = ["","Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+                    chartHistMensual.updateOptions({
+                        xaxis: { categories: data.historico.mensual.map(i => meses[i.mes]) }
                     });
-            }
-            // Cargar al inicio
-            loadGraficas();
+                    chartHistMensual.updateSeries([{ data: data.historico.mensual.map(i => Number(i.total)) }]);
 
-        });
+                    document.getElementById('canceladas-total-ordenes').innerText =
+                        data.canceladas.resumen.total_ordenes ?? 0;
+
+                    document.getElementById('canceladas-total-valor').innerText =
+                        new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' })
+                        .format(data.canceladas.resumen.total_valor ?? 0);
+
+                    chartCanceladasSucursales.updateOptions({
+                        xaxis: { categories: data.canceladas.por_sucursal.map(i => i.sucursal) }
+                    });
+                    chartCanceladasSucursales.updateSeries([{ data: data.canceladas.por_sucursal.map(i => Number(i.total)) }]);
+
+                    hideLoading();
+                })
+                .catch(err => {
+                    console.error(err);
+                    hideLoading();
+                });
+        }
+
+        // ===============================
+        // 5) CARGAR AL ENTRAR
+        // ===============================
+
+        actualizarLabelRango();
+        loadGraficas();
+
+    });
     </script>
 
 </body>

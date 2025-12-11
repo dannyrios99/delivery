@@ -66,7 +66,7 @@
         .background-image {
             width: 70%;
             height: 100%;
-            background: url('../assets/images/domi-login.webp') no-repeat center center;
+            background: url('../assets/images/login.jpg') no-repeat center center;
             background-size: cover;
             clip-path: polygon(0% 0%, 100% 0%, 85% 100%, 0% 100%);
         }
@@ -95,7 +95,7 @@
         .login-image {
             width: 100%;
             height: 100%;
-            background: url('../assets/images/domi-login.webp') no-repeat center center;
+            background: url('../assets/images/login.jpg') no-repeat center center;
             background-size: cover;
             clip-path: polygon(0% 0%, 100% 0%, 85% 100%, 0% 100%);
         }
