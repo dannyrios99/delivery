@@ -13,7 +13,7 @@ use App\Http\Controllers\PlataformasHorarioController;
 use App\Http\Controllers\VentasController;
 use App\Http\Controllers\VentasInoutController;
 use App\Http\Controllers\DidiOrderController;
-
+use App\Http\Controllers\RappiPagoController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -88,6 +88,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/didi/import', [DidiOrderController::class, 'import'])->name('didi.import');
     Route::get('/didi/template', [DidiOrderController::class, 'downloadTemplate'])->name('didi.template');
 
+        // Ruta para ver el formulario (GET)
+    Route::get('/rappi', [RappiPagoController::class, 'index'])->name('rappi');
+
+    // Ruta para procesar el archivo (POST)
+    Route::post('/rappi-importar', [RappiPagoController::class, 'importar'])->name('rappi.upload');
+    Route::get('/rappi-plantilla', [RappiPagoController::class, 'descargarPlantilla'])->name('rappi.plantilla');
 
     Route::get('/benchmark-inout', function () {
         try {
