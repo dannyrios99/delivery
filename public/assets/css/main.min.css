@@ -1828,11 +1828,11 @@ tr.group {
     right: 0;
     height: 100%;
     width: 50%;
-    background: url(../images/500.svg) center center no-repeat;
+    background: url(../../images/500.svg) center center no-repeat;
     background-size: contain;
 }
 body.err-500 .error-image {
-    background: url(../images/500.svg) center center no-repeat;
+    background: url(../../images/500.svg) center center no-repeat;
     background-size: contain;
 }
 body.error-page .container {

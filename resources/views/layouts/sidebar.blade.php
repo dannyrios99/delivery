@@ -140,7 +140,66 @@
             <a href=""><i data-lucide="circle-dollar-sign"></i>Gastos</a>
         </li>
 
+        <li class="sidebar-title">
+            PROYECTOS
+        </li>
+
+        {{-- LISTA DE PROYECTOS --}}
+        @if ($sidebarProyectos->count())
+            @foreach ($sidebarProyectos as $proyecto)
+                <li>
+                    <a href="{{ route('proyectos.show', $proyecto->id) }}">
+                        <i data-lucide="folder"></i>
+                        {{ $proyecto->nombre }}
+                    </a>
+                </li>
+            @endforeach
+        @else
+            <li class="px-3 text-muted">
+                No hay proyectos
+            </li>
+        @endif
+
+        {{-- BOTÓN SIEMPRE VISIBLE --}}
+        <li class="mt-2">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#modalProyecto">
+                <i data-lucide="plus"></i>
+                Crear proyecto
+            </a>
+        </li>
+
     </ul>
+</div>
+
+<div class="modal fade" id="modalProyecto" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" action="{{ route('proyectos.store') }}" style="width: 100%">
+            @csrf
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo proyecto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input
+                        type="text"
+                        name="nombre"
+                        class="form-control form-control-lg"
+                        placeholder="Nombre del proyecto"
+                        required
+                    >
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-lg" style="background-color:#e06d2a;color:#fff;">
+                        Crear proyecto
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 <style>
@@ -164,7 +223,7 @@
         color: #e06d2a !important;
         background: 0 0;
     }
-    
+
     /* Your existing toggle (keep as-is) */
     .page-sidebar .sidebar-title {
         font-size: .72rem;

@@ -14,6 +14,9 @@ use App\Http\Controllers\VentasController;
 use App\Http\Controllers\VentasInoutController;
 use App\Http\Controllers\DidiOrderController;
 use App\Http\Controllers\VentasRappiController;
+use App\Http\Controllers\RappiPagoController;
+use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\TareaController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -92,6 +95,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/rappi', [VentasRappiController::class, 'index'])->name('ventas.rappi');
     Route::post('/rappi-importar', [VentasRappiController::class, 'importar'])->name('rappi.upload');
     Route::get('/rappi-plantilla', [VentasRappiController::class, 'descargarPlantilla'])->name('rappi.plantilla');
+
+    Route::resource('proyectos', ProyectoController::class)
+    ->only(['store', 'show']);
+    Route::resource('tareas', TareaController::class);
+
+    Route::patch(
+        'tareas/{tarea}/estado',
+        [TareaController::class, 'cambiarEstado']
+    )->name('tareas.estado');
 
     Route::get('/benchmark-inout', function () {
         try {
