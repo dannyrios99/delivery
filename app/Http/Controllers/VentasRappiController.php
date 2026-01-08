@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\RappiPagosImport;
-use App\Models\RappiPago;
+use App\Imports\VentasRappiImport;
+use App\Models\VentasRappi;
 use App\Exports\RappiPlantillaExport;
 use Exception;
 
-class RappiPagoController extends Controller
+class VentasRappiController extends Controller
 {
     /**
      * Muestra el formulario para subir el archivo.
@@ -18,7 +18,7 @@ public function index()
     {
         // Traemos los últimos 2000 registros para no saturar la vista inicial
         // Seleccionamos solo las columnas que mostramos en la tabla para optimizar memoria
-        $pagos = RappiPago::select(
+        $ventas = VentasRappi::select(
             'fecha_creacion_orden',
             'id_orden',
             'nombre_tienda',
@@ -31,7 +31,7 @@ public function index()
         ->get();
 
         // Retornamos la vista donde tienes tu Tabla y tu Modal
-        return view('ventas.rappi', compact('pagos'));
+        return view('ventas.rappi', compact('ventas'));
     }
     /**
      * Procesa la importación del Excel.
@@ -52,7 +52,7 @@ public function index()
         try {
             // 3. Ejecutar la importación usando la clase que creamos antes
             // Laravel Excel detectará automáticamente si es CSV o Excel
-            Excel::import(new RappiPagosImport, $request->file('archivo'));
+            Excel::import(new VentasRappiImport, $request->file('archivo'));
 
             // 4. Retornar éxito
             return back()->with('success', '¡Importación completada exitosamente! Los datos se han cargado en la base de datos.');

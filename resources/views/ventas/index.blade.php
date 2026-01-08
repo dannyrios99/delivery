@@ -98,19 +98,18 @@
                                         <div id="year-menu-{{ $p['slug'] }}" class="year-menu">
 
                                             {{-- TODOS --}}
-                                            <form method="GET">
-                                                <input type="hidden" name="platform" value="{{ $p['slug'] }}">
-                                                <input type="hidden" name="year" value="todos">
-                                                <button type="submit">Todos</button>
-                                            </form>
+                                            <button type="button"
+                                                    onclick="loadMetrics('{{ $p['slug'] }}', 'todos')">
+                                                Todos
+                                            </button>
+
 
                                             {{-- Últimos 4 años --}}
                                             @foreach ([date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3] as $y)
-                                                <form method="GET">
-                                                    <input type="hidden" name="platform" value="{{ $p['slug'] }}">
-                                                    <input type="hidden" name="year" value="{{ $y }}">
-                                                    <button type="submit">{{ $y }}</button>
-                                                </form>
+                                                <button type="button"
+                                                        onclick="loadMetrics('{{ $p['slug'] }}', '{{ $y }}')">
+                                                    {{ $y }}
+                                                </button>
                                             @endforeach
 
                                         </div>
@@ -175,10 +174,56 @@
     </script>
 
     <script>
+    function loadMetrics(platform, year) {
+
+        // Cambiar texto del botón
+        const btn = document.querySelector(
+            `button[onclick="toggleYearMenu('${platform}')"]`
+        );
+
+        if (btn) {
+            btn.innerHTML = `Año: ${year === 'todos' ? 'Todos' : year}
+                <i class="fa-solid fa-chevron-down ms-1"></i>`;
+        }
+
+        // Cerrar menú
+        document.getElementById('year-menu-' + platform).style.display = 'none';
+
+        // Mostrar loading
+        document.getElementById(`ordenes-${platform}`).innerText = 'Cargando...';
+        document.getElementById(`vendido-${platform}`).innerText = 'Cargando...';
+        document.getElementById(`ticket-${platform}`).innerText = 'Cargando...';
+
+        fetch(`{{ route('ventas.metricas') }}?platform=${platform}&year=${year}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById(`ordenes-${platform}`).innerText =
+                    new Intl.NumberFormat().format(data.total_ordenes ?? 0);
+
+                document.getElementById(`vendido-${platform}`).innerText =
+                    "$ " + new Intl.NumberFormat('es-CO').format(data.total_vendido ?? 0);
+
+                document.getElementById(`ticket-${platform}`).innerText =
+                    "$ " + new Intl.NumberFormat('es-CO').format(Math.round(data.ticket_promedio ?? 0));
+            })
+            .catch(() => {
+                document.getElementById(`ordenes-${platform}`).innerText = "–";
+                document.getElementById(`vendido-${platform}`).innerText = "–";
+                document.getElementById(`ticket-${platform}`).innerText = "–";
+            });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        loadMetrics('inout', 'todos');
+        loadMetrics('rappi', 'todos');
+    });
+    </script>
+
+    <script>
     document.addEventListener("DOMContentLoaded", function () {
 
         @foreach ($plataformas as $p)
-            @if ($p['slug'] === 'inout') // Solo si la plataforma está integrada
+            @if (in_array($p['slug'], ['inout', 'rappi', 'didi']))
                 fetch("{{ route('ventas.metricas') }}?platform={{ $p['slug'] }}&year={{ $p['year'] }}")
                     .then(res => res.json())
                     .then(data => {

@@ -7,13 +7,13 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\HorariosInoutController;
-use App\Http\Controllers\RappiController;
+use App\Http\Controllers\HorariosRappiController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\PlataformasHorarioController;
 use App\Http\Controllers\VentasController;
 use App\Http\Controllers\VentasInoutController;
 use App\Http\Controllers\DidiOrderController;
-use App\Http\Controllers\RappiPagoController;
+use App\Http\Controllers\VentasRappiController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -68,10 +68,10 @@ Route::middleware('auth')->group(function () {
     Route::post('horarios/inout/{id}', [HorariosInOutController::class, 'update'])->name('horarios.inout.update');
 
     // Rappi
-    Route::get('/horarios/rappi', [RappiController::class, 'index'])->name('rappi.index');
-    Route::post('/horarios/rappi/{sucursal_id}', [RappiController::class, 'store'])->name('rappi.store');
-    Route::post('/horarios/rappi/update/{id}', [RappiController::class, 'update'])->name('rappi.update');
-    Route::delete('/horarios/rappi/{id}', [RappiController::class, 'destroy'])->name('rappi.destroy');
+    Route::get('/horarios/rappi', [HorariosRappiController::class, 'index'])->name('rappi.index');
+    Route::post('/horarios/rappi/{sucursal_id}', [HorariosRappiController::class, 'store'])->name('rappi.store');
+    Route::post('/horarios/rappi/update/{id}', [HorariosRappiController::class, 'update'])->name('rappi.update');
+    Route::delete('/horarios/rappi/{id}', [HorariosRappiController::class, 'destroy'])->name('rappi.destroy');
 
     // Ventas
     Route::get('/ventas', [VentasController::class, 'index'])->name('ventas.index');
@@ -84,16 +84,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/ventas/inout/data', [VentasInoutController::class, 'inoutData'])->name('ventas.inout.data');
 
     // Ventas Didi
-    Route::get('/didi', [DidiOrderController::class, 'index'])->name('didi');
+    Route::get('/didi', [DidiOrderController::class, 'index'])->name('ventas.didi');
     Route::post('/didi/import', [DidiOrderController::class, 'import'])->name('didi.import');
     Route::get('/didi/template', [DidiOrderController::class, 'downloadTemplate'])->name('didi.template');
 
-        // Ruta para ver el formulario (GET)
-    Route::get('/rappi', [RappiPagoController::class, 'index'])->name('rappi');
-
-    // Ruta para procesar el archivo (POST)
-    Route::post('/rappi-importar', [RappiPagoController::class, 'importar'])->name('rappi.upload');
-    Route::get('/rappi-plantilla', [RappiPagoController::class, 'descargarPlantilla'])->name('rappi.plantilla');
+    // Ventas rappi
+    Route::get('/rappi', [VentasRappiController::class, 'index'])->name('ventas.rappi');
+    Route::post('/rappi-importar', [VentasRappiController::class, 'importar'])->name('rappi.upload');
+    Route::get('/rappi-plantilla', [VentasRappiController::class, 'descargarPlantilla'])->name('rappi.plantilla');
 
     Route::get('/benchmark-inout', function () {
         try {

@@ -24,16 +24,16 @@ class VentasController extends Controller
                 [
                     'slug' => 'rappi',
                     'nombre' => 'Rappi',
-                    'descripcion' => 'Integración pendiente.',
+                    'descripcion' => 'Órdenes y ventas procesadas por Rappi.',
                     'year' => 'todos',
-                    'ruta' => '#',
+                    'ruta' => route('ventas.rappi'),
                 ],
                 [
                     'slug' => 'didi',
                     'nombre' => 'Didi',
-                    'descripcion' => 'Integración pendiente.',
+                    'descripcion' => 'Órdenes y ventas procesadas por Didi.',
                     'year' => 'todos',
-                    'ruta' => '#',
+                    'ruta' => route('ventas.didi'),
                 ],
         ];
 
@@ -93,13 +93,14 @@ class VentasController extends Controller
             try {
                 $query = DB::table('ventas_rappi')
                     ->selectRaw("
-                        COUNT(*) as total_ordenes,
-                        SUM(total) as total_vendido,
-                        AVG(total) as ticket_promedio
-                    ");
+                        COUNT(DISTINCT id_orden) as total_ordenes,
+                        SUM(venta_bruta) as total_vendido,
+                        AVG(venta_bruta) as ticket_promedio
+                    ")
+                    ->whereNotIn('estado_orden', ['CANCELLED', 'CANCELADA']);
 
                 if ($year !== 'todos') {
-                    $query->whereYear('fecha', $year);  // Cambia 'fecha' al nombre real
+                    $query->whereYear('fecha_creacion_orden', $year);
                 }
 
                 $result = $query->first();
@@ -109,7 +110,7 @@ class VentasController extends Controller
                 }
 
             } catch (\Exception $e) {
-                // si no existe la tabla o no hay datos, devolvemos ceros
+                // silencio intencional: no rompe la UI
             }
         }
 
@@ -120,15 +121,15 @@ class VentasController extends Controller
         if ($platform === 'didi') {
 
             try {
-                $query = DB::table('ventas_didi')
+                $query = DB::table('didi_orders')
                     ->selectRaw("
-                        COUNT(*) as total_ordenes,
-                        SUM(total) as total_vendido,
-                        AVG(total) as ticket_promedio
+                        COUNT(DISTINCT order_id) as total_ordenes,
+                        SUM(CAST(billing_amount AS DECIMAL(20,2))) as total_vendido,
+                        AVG(CAST(billing_amount AS DECIMAL(20,2))) as ticket_promedio
                     ");
 
                 if ($year !== 'todos') {
-                    $query->whereYear('fecha', $year); // Cambia 'fecha' al nombre real
+                    $query->whereYear('billing_time', $year);
                 }
 
                 $result = $query->first();
@@ -138,12 +139,11 @@ class VentasController extends Controller
                 }
 
             } catch (\Exception $e) {
-                // si falla, no rompe nada
+                // silencio intencional, no rompemos la UI
             }
         }
 
         return response()->json($data);
     }
-
 
 }

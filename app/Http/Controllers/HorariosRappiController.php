@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Sucursal;
 use App\Models\HorarioRappi;
 
-class RappiController extends Controller
+class HorariosRappiController extends Controller
 {
     /**
      * Mostrar la vista principal agrupada por sucursal

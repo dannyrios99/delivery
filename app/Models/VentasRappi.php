@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class RappiPago extends Model
+class VentasRappi extends Model
 {
     use HasFactory;
 
     /**
      * El nombre exacto de la tabla en MySQL
      */
-    protected $table = 'rappi_pagos';
+    protected $table = 'ventas_rappi';
 
     /**
      * Desactivamos timestamps porque la tabla no tiene columnas created_at y updated_at

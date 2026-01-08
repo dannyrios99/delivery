@@ -2,14 +2,14 @@
 
 namespace App\Imports;
 
-use App\Models\RappiPago;
+use App\Models\VentasRappi;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Carbon\Carbon;
 
-class RappiPagosImport implements ToModel, WithHeadingRow, WithChunkReading, WithBatchInserts
+class VentasRappiImport implements ToModel, WithHeadingRow, WithChunkReading, WithBatchInserts
 {
     /**
      * Limpia fechas en español (lun, mar...) a formato Y-m-d H:i:s
@@ -48,7 +48,7 @@ class RappiPagosImport implements ToModel, WithHeadingRow, WithChunkReading, Wit
 
     public function model(array $row)
     {
-        return new RappiPago([
+        return new VentasRappi([
             'fecha_creacion_orden' => $this->limpiarFecha($row['fecha_creacion_orden'] ?? null),
             'id_orden'             => $row['id_orden'] ?? null,
             'id_paidlot'           => $row['id_paidlot'] ?? null,

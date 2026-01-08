@@ -14,7 +14,8 @@
 
     <div class="page-container">
 
-        @section('sucursales')
+        @section('ventas')
+            class="active-page"
         @endsection
 
         @include('layouts.sidebar')
@@ -28,7 +29,7 @@
                             <div class="card-body">
 
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h4 class="mb-0">Gestión Rippi</h4>
+                                    <h4 class="mb-0">Gestión Rappi</h4>
                                     <div class="d-flex justify-content-end gap-2">
 
                                         <!-- Botón Importar -->
@@ -50,7 +51,7 @@
 
                                 <div class="table-responsive mt-4">
                                     <div class="table-responsive">
-                                        <table id="tablaRappi" class="table table-striped table-hover w-100">
+                                        <table id="tablaRappi" class="table table-hover w-100">
                                             <thead>
                                                 <tr>
                                                     <th>Fecha</th>
@@ -62,35 +63,35 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($pagos as $pago)
+                                                @foreach ($ventas as $venta)
                                                     <tr>
                                                         <td
-                                                            data-sort="{{ $pago->fecha_creacion_orden ? $pago->fecha_creacion_orden->timestamp : 0 }}">
-                                                            {{ $pago->fecha_creacion_orden ? $pago->fecha_creacion_orden->format('d/m/Y H:i') : 'N/A' }}
+                                                            data-sort="{{ $venta->fecha_creacion_orden ? $venta->fecha_creacion_orden->timestamp : 0 }}">
+                                                            {{ $venta->fecha_creacion_orden ? $venta->fecha_creacion_orden->format('d/m/Y H:i') : 'N/A' }}
                                                         </td>
 
-                                                        <td class="fw-bold">{{ $pago->id_orden }}</td>
-                                                        <td>{{ $pago->nombre_tienda }}</td>
+                                                        <td class="fw-bold">{{ $venta->id_orden }}</td>
+                                                        <td>{{ $venta->nombre_tienda }}</td>
 
                                                         <td>
-                                                            @if (in_array($pago->estado_orden, ['delivered', 'finished']))
+                                                            @if (in_array($venta->estado_orden, ['delivered', 'finished']))
                                                                 <span class="badge bg-success">Entregado</span>
-                                                            @elseif($pago->estado_orden == 'canceled')
+                                                            @elseif($venta->estado_orden == 'canceled')
                                                                 <span class="badge bg-danger">Cancelado</span>
                                                             @else
                                                                 <span
-                                                                    class="badge bg-secondary">{{ $pago->estado_orden }}</span>
+                                                                    class="badge bg-secondary">{{ $venta->estado_orden }}</span>
                                                             @endif
                                                         </td>
 
                                                         <td class="text-end">
-                                                            $ {{ number_format($pago->venta_bruta, 0, ',', '.') }}
+                                                            $ {{ number_format($venta->venta_bruta, 0, ',', '.') }}
                                                         </td>
 
                                                         <td
-                                                            class="text-end fw-bold {{ $pago->valor_a_transferir < 0 ? 'text-danger' : 'text-success' }}">
+                                                            class="text-end fw-bold {{ $venta->valor_a_transferir < 0 ? 'text-danger' : 'text-success' }}">
                                                             $
-                                                            {{ number_format($pago->valor_a_transferir, 0, ',', '.') }}
+                                                            {{ number_format($venta->valor_a_transferir, 0, ',', '.') }}
                                                         </td>
                                                     </tr>
                                                 @endforeach
