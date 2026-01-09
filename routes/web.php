@@ -99,7 +99,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('proyectos', ProyectoController::class)
     ->only(['store', 'show']);
-    Route::resource('tareas', TareaController::class);
+    Route::resource('tareas', TareaController::class)
+    ->only(['store', 'update', 'destroy']);
+
 
     Route::patch(
         'tareas/{tarea}/estado',

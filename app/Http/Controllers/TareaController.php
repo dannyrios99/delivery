@@ -6,6 +6,9 @@ use App\Models\Tarea;
 use App\Models\Proyecto;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\TareaChecklist;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TareaController extends Controller
 {
@@ -25,21 +28,63 @@ class TareaController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'proyecto_id' => 'required|exists:proyectos,id',
-        ]);
+        try {
+            $request->validate([
+                'titulo' => 'required|string|max:255',
+                'proyecto_id' => 'required|exists:proyectos,id',
+                'grupo_id' => 'required|exists:grupos_tareas,id',
+                'descripcion' => 'nullable|string',
+                'prioridad' => 'nullable|in:baja,media,alta',
+                'fecha_limite' => 'nullable|date',
 
-        Tarea::create([
-            'titulo' => $request->titulo,
-            'proyecto_id' => $request->proyecto_id,
-            'estado' => 'pendiente',
-        ]);
+                // checklist
+                'checklist' => 'nullable|array',
+                'checklist.*.texto' => 'required|string|max:255',
+                'checklist.*.completado' => 'nullable|boolean',
+            ]);
 
-        return redirect()->back()
-            ->with('success', 'Tarea creada correctamente');
+            DB::beginTransaction();
+
+            // 1️⃣ Crear la tarea
+            $tarea = Tarea::create([
+                'titulo' => $request->titulo,
+                'descripcion' => $request->descripcion,
+                'prioridad' => $request->prioridad,
+                'fecha_limite' => $request->fecha_limite,
+                'proyecto_id' => $request->proyecto_id,
+                'grupo_id' => $request->grupo_id,
+            ]);
+
+            // 2️⃣ Guardar checklist (si existe)
+            if ($request->has('checklist')) {
+                foreach ($request->checklist as $index => $item) {
+                    TareaChecklist::create([
+                        'tarea_id' => $tarea->id,
+                        'texto' => $item['texto'],
+                        'completado' => $item['completado'] ?? 0,
+                        'orden' => $index,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Tarea creada correctamente');
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            Log::error('Error al crear tarea con checklist', [
+                'error' => $e->getMessage(),
+                'request' => $request->all(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'No se pudo crear la tarea');
+        }
     }
-
 
     public function show(Tarea $tarea)
     {
@@ -55,27 +100,45 @@ class TareaController extends Controller
         return view('tareas.edit', compact('tarea', 'proyectos', 'usuarios'));
     }
 
-    public function update(Request $request, Tarea $tarea)
-    {
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'estado' => 'required|in:pendiente,en_progreso,hecho',
-            'prioridad' => 'required|in:baja,media,alta',
-            'fecha_limite' => 'nullable|date'
-        ]);
+public function update(Request $request, Tarea $tarea)
+{
+    $request->validate([
+        'titulo' => 'required|string|max:255',
+        'descripcion' => 'nullable|string',
+        'prioridad' => 'nullable|in:baja,media,alta',
+        'fecha_limite' => 'nullable|date',
+    ]);
 
-        $tarea->update($request->all());
+    $tarea->update([
+        'titulo' => $request->titulo,
+        'descripcion' => $request->descripcion,
+        'prioridad' => $request->prioridad,
+        'fecha_limite' => $request->fecha_limite,
+    ]);
 
-        return redirect()->route('tareas.index')
-            ->with('success', 'Tarea actualizada');
-    }
+    return redirect()->back()
+        ->with('success', 'Tarea actualizada correctamente');
+}
+
 
     public function destroy(Tarea $tarea)
     {
-        $tarea->delete();
+        try {
+            $tarea->delete();
 
-        return redirect()->route('tareas.index')
-            ->with('success', 'Tarea eliminada');
+            return redirect()->back()
+                ->with('success', 'Tarea eliminada correctamente');
+
+        } catch (\Throwable $e) {
+
+            Log::error('Error al eliminar tarea', [
+                'tarea_id' => $tarea->id ?? null,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'No se pudo eliminar la tarea');
+        }
     }
 
     // 🔥 Método extra: cambiar estado (Kanban / Ajax)

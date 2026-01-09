@@ -13,28 +13,27 @@ class Tarea extends Model
 
     protected $fillable = [
         'proyecto_id',
-        'asignado_a',
+        'grupo_id',
         'titulo',
         'descripcion',
-        'estado',
         'prioridad',
-        'fecha_limite'
+        'fecha_limite',
     ];
 
-    // La tarea pertenece a un proyecto
+
     public function proyecto()
     {
         return $this->belongsTo(Proyecto::class, 'proyecto_id');
     }
 
-    // La tarea está asignada a un usuario
-    // public function usuario()
-    // {
-    //     return $this->belongsTo(User::class, 'asignado_a');
-    // }
     public function grupo()
+    {
+        return $this->belongsTo(GrupoTarea::class, 'grupo_id');
+    }
+    public function checklist()
 {
-    return $this->belongsTo(GrupoTarea::class, 'grupo_id');
+    return $this->hasMany(TareaChecklist::class, 'tarea_id');
 }
 
 }
+
