@@ -21,4 +21,11 @@ class Proyecto extends Model
         return $this->hasMany(Tarea::class, 'proyecto_id');
     }
 
+    public function grupos()
+{
+    return $this->hasMany(GrupoTarea::class, 'proyecto_id')
+                ->orderBy('orden');
+}
+
+
 }

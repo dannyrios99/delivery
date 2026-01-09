@@ -17,6 +17,7 @@ use App\Http\Controllers\VentasRappiController;
 use App\Http\Controllers\RappiPagoController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\TareaController;
+use App\Http\Controllers\GrupoTareaController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -104,6 +105,19 @@ Route::middleware('auth')->group(function () {
         'tareas/{tarea}/estado',
         [TareaController::class, 'cambiarEstado']
     )->name('tareas.estado');
+
+Route::resource('grupos-tareas', GrupoTareaController::class)
+    ->only(['store', 'update', 'destroy']);
+
+
+    Route::resource('proyectos', ProyectoController::class)
+    ->only(['store', 'show']);
+    Route::resource('tareas', TareaController::class);
+
+Route::patch('/tareas/{tarea}/mover', [TareaController::class, 'mover'])
+    ->name('tareas.mover');
+
+
 
     Route::get('/benchmark-inout', function () {
         try {
