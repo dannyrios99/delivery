@@ -79,14 +79,42 @@ class TareaController extends Controller
     }
 
     // 🔥 Método extra: cambiar estado (Kanban / Ajax)
-    public function cambiarEstado(Request $request, Tarea $tarea)
-    {
+public function cambiarEstado(Request $request, Tarea $tarea)
+{
+    try {
         $request->validate([
             'estado' => 'required|in:pendiente,en_progreso,hecho'
         ]);
 
-        $tarea->update(['estado' => $request->estado]);
+        $tarea->update([
+            'estado' => $request->estado
+        ]);
 
-        return response()->json(['success' => true]);
+        return redirect()->back()
+            ->with('success', 'Estado de la tarea actualizado');
+    } catch (\Exception $e) {
+
+        return redirect()->back()
+            ->with('error', 'Ocurrió un error al actualizar el estado');
     }
+}
+public function mover(Request $request, Tarea $tarea)
+{
+    try {
+        $request->validate([
+            'grupo_id' => 'required|exists:grupos_tareas,id'
+        ]);
+
+        $tarea->update([
+            'grupo_id' => $request->grupo_id
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Tarea movida correctamente');
+    } catch (\Exception $e) {
+        return redirect()->back()
+            ->with('error', 'No se pudo mover la tarea');
+    }
+}
+
 }

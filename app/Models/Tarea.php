@@ -28,8 +28,13 @@ class Tarea extends Model
     }
 
     // La tarea está asignada a un usuario
-    public function usuario()
-    {
-        return $this->belongsTo(User::class, 'asignado_a');
-    }
+    // public function usuario()
+    // {
+    //     return $this->belongsTo(User::class, 'asignado_a');
+    // }
+    public function grupo()
+{
+    return $this->belongsTo(GrupoTarea::class, 'grupo_id');
+}
+
 }
