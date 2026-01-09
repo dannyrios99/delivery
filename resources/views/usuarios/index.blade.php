@@ -39,6 +39,7 @@
                                             <tr>
                                                 <th>Nombre</th>
                                                 <th>Usuario</th>
+                                                <th>Correo</th>
                                                 <th>Rol</th>
                                                 <th>Acciones</th>
                                             </tr>
@@ -49,6 +50,7 @@
                                                 <tr>
                                                     <td>{{ $user->name }}</td>
                                                     <td>{{ $user->username }}</td>
+                                                    <td>{{ $user->email }}</td>
                                                     <td>{{ $user->role }}</td>
                                                     <td class="text-center">
                                                         <div class="d-flex justify-content-start gap-2">
@@ -108,6 +110,14 @@
                                     <input type="text" name="name" class="form-control rounded-3" required placeholder="Ej. Juan Pérez">
                                 </div>
 
+                                <div class="mb-3">
+                                    <label for="role" class="form-label fw-semibold">Rol</label>
+                                    <select name="role" id="roleCrear" class="form-select rounded-3 mx-auto" required>
+                                        <option value="">Seleccione un rol</option>
+                                        <option value="admin">Administrador</option>
+                                    </select>
+                                </div>
+
                                 <!-- Password -->
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Contraseña</label>
@@ -126,6 +136,12 @@
                                     <input type="text" name="username" class="form-control rounded-3" required>
                                 </div>
 
+                                <!-- Correo -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Correo</label>
+                                    <input type="email" name="email" class="form-control rounded-3" required>
+                                </div>
+
                                 <!-- Confirmar Password -->
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Confirmar contraseña</label>
@@ -136,21 +152,7 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="mb-3 text-center">
-                                    <label for="role" class="form-label fw-semibold">Rol</label>
-                                    <select name="role" id="roleCrear" class="form-select rounded-3 w-50 mx-auto" required>
-                                        <option value="">Seleccione un rol</option>
-                                        <option value="admin">Administrador</option>
-                                        <option value="tecnico">Técnico</option>
-                                        <option value="tecnico_lider">Técnico Líder</option>
-                                        <option value="lector">Lector</option>
-                                        <option value="sucursal">Administrador Sucursal</option>
-                                        <option value="sucursal_pdv">Sucursal PDV</option>
-                                    </select>
-                                </div>
-                            </div>      
+                            </div>   
                     </div>
                 </div>
 
@@ -188,10 +190,13 @@
                           <label class="form-label fw-semibold">Nombre</label>
                           <input type="text" name="name" class="form-control rounded-3" value="{{ $user->name }}" required>
                         </div>
-                
+
                         <div class="mb-3">
-                          <label class="form-label fw-semibold">Usuario</label>
-                          <input type="text" name="username" class="form-control rounded-3" value="{{ $user->username }}" required>
+                          <label class="form-label fw-semibold">Rol</label>
+                          <select name="role" id="roleEditar{{ $user->id }}" class="form-select rounded-3" required>
+                            <option value="">Seleccione un rol</option>
+                            <option value="admin" @selected($user->role === 'admin')>Administrador</option>
+                          </select>
                         </div>
                         
                         <div class="mb-3">
@@ -207,17 +212,13 @@
                 
                       <div class="col-md-6">
                         <div class="mb-3">
-                          <label class="form-label fw-semibold">Rol</label>
-                          <select name="role" id="roleEditar{{ $user->id }}" class="form-select rounded-3" required>
-                            <option value="">Seleccione un rol</option>
-                            <option value="admin"         @selected($user->role === 'admin')>Administrador</option>
-                            <option value="tecnico"       @selected($user->role === 'tecnico')>Técnico</option>
-                            <option value="tecnico_lider" @selected($user->role === 'tecnico_lider')>Técnico Líder</option>
-                            <option value="lector"        @selected($user->role === 'lector')>Lector</option>
-                            <option value="sucursal"      @selected($user->role === 'sucursal')>Administrador Sucursal</option>
-                            {{-- ✅ nuevo --}}
-                            <option value="sucursal_pdv"  @selected($user->role === 'sucursal_pdv')>Sucursal PDV</option>
-                          </select>
+                          <label class="form-label fw-semibold">Usuario</label>
+                          <input type="text" name="username" class="form-control rounded-3" value="{{ $user->username }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                          <label class="form-label fw-semibold">Correo</label>
+                          <input type="email" name="email" class="form-control rounded-3" value="{{ $user->email }}" required>
                         </div>
                 
                         <div class="mb-3">

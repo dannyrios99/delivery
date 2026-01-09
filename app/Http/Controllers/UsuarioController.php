@@ -27,6 +27,7 @@ class UsuarioController extends Controller
             $request->validate([
                 'name'     => 'required|string|max:255',
                 'username' => 'required|string|max:40|unique:users,username',
+                'email' => 'required|string|max:255',
                 'role'     => 'required|string',
                 'password' => 'required|string|min:6|confirmed',
             ]);
@@ -35,6 +36,7 @@ class UsuarioController extends Controller
                 User::create([
                     'name'     => $request->name,
                     'username' => $request->username,
+                    'email' => $request->email,
                     'role'     => $request->role,
                     'password' => Hash::make($request->password),
                 ]);
@@ -55,6 +57,7 @@ class UsuarioController extends Controller
             $validated = $request->validate([
                 'name'     => 'required|string|max:255',
                 'username' => 'required|string|max:40|unique:users,username,' . $id,
+                'email'     => 'required|string|max:255',
                 'role'     => 'required|string',
                 'password' => 'nullable|string|min:6|confirmed',
             ]);
@@ -65,6 +68,7 @@ class UsuarioController extends Controller
 
                 $user->name = $validated['name'];
                 $user->username = $validated['username'];
+                $user->email = $validated['email'];
                 $user->role = $validated['role'];
 
                 // Si envió contraseña, actualizarla
