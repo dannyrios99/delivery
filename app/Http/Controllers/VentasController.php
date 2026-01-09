@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 
 class VentasController extends Controller
@@ -45,105 +46,59 @@ class VentasController extends Controller
         $platform = $request->get('platform');
         $year = $request->get('year', 'todos');
 
-        // Estructura por defecto
-        $data = (object)[
+        // Creamos una llave de cache única: ej. metrics_rappi_2024
+        $cacheKey = "metrics_{$platform}_{$year}";
+
+        // Recordar los datos por 15 minutos para no saturar la BD
+        $data = Cache::remember($cacheKey, now()->addMinutes(2), function () use ($platform, $year) {
+            return $this->getPlatformData($platform, $year);
+        });
+
+        return response()->json($data);
+    }
+
+    /**
+     * Lógica de extracción de datos separada para mayor orden
+     */
+    private function getPlatformData($platform, $year)
+    {
+        $default = [
             'total_ordenes' => 0,
             'total_vendido' => 0,
             'ticket_promedio' => 0,
         ];
 
-        // ================================
-        // 1. MÉTRICAS INOUT (BD externa)
-        // ================================
-        if ($platform === 'inout') {
-
-            $estadosFinales = ['Entregado', 'Reparto', 'Cerrado con novedad'];
-
-            try {
-                $query = DB::connection('inout')
-                    ->table('orders_hotamericas')
-                    ->selectRaw("
-                        COUNT(*) as total_ordenes,
-                        SUM(total) as total_vendido,
-                        AVG(total) as ticket_promedio
-                    ")
-                    ->whereIn('stateCurrent', $estadosFinales);
-
-                if ($year !== 'todos') {
-                    $query->whereYear('createdAt', $year);
-                }
-
-                $result = $query->first();
-
-                if ($result) {
-                    $data = $result;
-                }
-
-            } catch (\Exception $e) {
-                // Si falla la conexión externa, devolvemos ceros sin romper la app
+        try {
+            if ($platform === 'inout') {
+                $query = DB::connection('inout')->table('orders_hotamericas')
+                    ->selectRaw("COUNT(*) as total_ordenes, SUM(total) as total_vendido, AVG(total) as ticket_promedio")
+                    ->whereIn('stateCurrent', ['Entregado', 'Reparto', 'Cerrado con novedad']);
+                
+                if ($year !== 'todos') $query->whereYear('createdAt', $year);
+                return $query->first() ?? $default;
             }
-        }
 
-        // ================================
-        // 2. MÉTRICAS RAPPI (tu BD local)
-        //    Tabla sugerida: ventas_rappi
-        // ================================
-        if ($platform === 'rappi') {
-
-            try {
+            if ($platform === 'rappi') {
                 $query = DB::table('ventas_rappi')
-                    ->selectRaw("
-                        COUNT(DISTINCT id_orden) as total_ordenes,
-                        SUM(venta_bruta) as total_vendido,
-                        AVG(venta_bruta) as ticket_promedio
-                    ")
+                    ->selectRaw("COUNT(DISTINCT id_orden) as total_ordenes, SUM(venta_bruta) as total_vendido, AVG(venta_bruta) as ticket_promedio")
                     ->whereNotIn('estado_orden', ['CANCELLED', 'CANCELADA']);
 
-                if ($year !== 'todos') {
-                    $query->whereYear('fecha_creacion_orden', $year);
-                }
-
-                $result = $query->first();
-
-                if ($result) {
-                    $data = $result;
-                }
-
-            } catch (\Exception $e) {
-                // silencio intencional: no rompe la UI
+                if ($year !== 'todos') $query->whereYear('fecha_creacion_orden', $year);
+                return $query->first() ?? $default;
             }
-        }
 
-        // ================================
-        // 3. MÉTRICAS DIDI (tu BD local)
-        //    Tabla sugerida: ventas_didi
-        // ================================
-        if ($platform === 'didi') {
-
-            try {
+            if ($platform === 'didi') {
                 $query = DB::table('didi_orders')
-                    ->selectRaw("
-                        COUNT(DISTINCT order_id) as total_ordenes,
-                        SUM(CAST(billing_amount AS DECIMAL(20,2))) as total_vendido,
-                        AVG(CAST(billing_amount AS DECIMAL(20,2))) as ticket_promedio
-                    ");
+                    ->selectRaw("COUNT(DISTINCT order_id) as total_ordenes, SUM(billing_amount) as total_vendido, AVG(billing_amount) as ticket_promedio");
 
-                if ($year !== 'todos') {
-                    $query->whereYear('billing_time', $year);
-                }
-
-                $result = $query->first();
-
-                if ($result) {
-                    $data = $result;
-                }
-
-            } catch (\Exception $e) {
-                // silencio intencional, no rompemos la UI
+                if ($year !== 'todos') $query->whereYear('billing_time', $year);
+                return $query->first() ?? $default;
             }
+        } catch (\Exception $e) {
+            \Log::error("Error en métricas {$platform}: " . $e->getMessage());
         }
 
-        return response()->json($data);
+        return $default;
     }
 
 }

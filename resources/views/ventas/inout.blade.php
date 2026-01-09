@@ -21,6 +21,43 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* Botón de Volver Estilizado */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px; /* Bordes suavizados estilo iOS/SaaS moderno */
+            background: #ffffff;
+            color: #495057;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+        }
+
+        .btn-back i {
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background-color: #ffffff;
+            color: #333; /* El color naranja de tu marca */
+            border-color: #ced4da;
+            transform: translateY(-2px);
+        }
+
+        .btn-back:hover i {
+            transform: translateX(-4px); /* Pequeño rebote hacia la izquierda */
+        }
+
+        .btn-modern-back:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
     </style>
 </head>
 
@@ -54,10 +91,8 @@
                         </a>
 
                         {{-- VOLVER --}}
-                        <a href="{{ route('ventas.index') }}"
-                           class="btn btn-outline-secondary btn-circle"
-                           title="Volver">
-                            <i class="fa-solid fa-chevron-left"></i>
+                        <a href="{{ route('ventas.index') }}" class="btn-back">
+                            <i class="fa-solid fa-arrow-left-long"></i>
                         </a>
                     </div>
                 </div>

@@ -174,78 +174,77 @@
     </script>
 
     <script>
-    function loadMetrics(platform, year) {
+        // 1. Función principal para cargar métricas
+        function loadMetrics(platform, year) {
+            const elementos = {
+                ordenes: document.getElementById(`ordenes-${platform}`),
+                vendido: document.getElementById(`vendido-${platform}`),
+                ticket: document.getElementById(`ticket-${platform}`)
+            };
 
-        // Cambiar texto del botón
-        const btn = document.querySelector(
-            `button[onclick="toggleYearMenu('${platform}')"]`
-        );
+            // Verificamos que los elementos existan antes de continuar
+            if (!elementos.ordenes) return;
 
-        if (btn) {
-            btn.innerHTML = `Año: ${year === 'todos' ? 'Todos' : year}
-                <i class="fa-solid fa-chevron-down ms-1"></i>`;
+            // Actualizar el texto del botón de año (UI)
+            const btn = document.querySelector(`button[onclick="toggleYearMenu('${platform}')"]`);
+            if (btn) {
+                btn.innerHTML = `Año: ${year === 'todos' ? 'Todos' : year} <i class="fa-solid fa-chevron-down ms-1"></i>`;
+            }
+
+            // Cerrar el menú desplegable si está abierto
+            const menu = document.getElementById('year-menu-' + platform);
+            if (menu) menu.style.display = 'none';
+
+            // Estado de carga visual
+            elementos.ordenes.innerHTML = '<span class="spinner-border spinner-border-sm text-secondary" role="status"></span>';
+            elementos.vendido.innerText = '...';
+            elementos.ticket.innerText = '...';
+
+            // Petición al servidor
+            fetch(`{{ route('ventas.metricas') }}?platform=${platform}&year=${year}`)
+                .then(res => res.json())
+                .then(data => {
+                    elementos.ordenes.innerText = new Intl.NumberFormat().format(data.total_ordenes ?? 0);
+                    elementos.vendido.innerText = "$ " + new Intl.NumberFormat('es-CO').format(data.total_vendido ?? 0);
+                    elementos.ticket.innerText = "$ " + new Intl.NumberFormat('es-CO').format(Math.round(data.ticket_promedio ?? 0));
+                })
+                .catch(error => {
+                    console.error('Error cargando métricas:', error);
+                    elementos.ordenes.innerText = "–";
+                    elementos.vendido.innerText = "–";
+                    elementos.ticket.innerText = "–";
+                });
         }
 
-        // Cerrar menú
-        document.getElementById('year-menu-' + platform).style.display = 'none';
+        // 2. Ejecución al cargar la página
+        document.addEventListener("DOMContentLoaded", function () {
+            // Aquí pones todos los slugs de tus plataformas
+            const plataformasActivas = ['inout', 'rappi', 'didi'];
 
-        // Mostrar loading
-        document.getElementById(`ordenes-${platform}`).innerText = 'Cargando...';
-        document.getElementById(`vendido-${platform}`).innerText = 'Cargando...';
-        document.getElementById(`ticket-${platform}`).innerText = 'Cargando...';
-
-        fetch(`{{ route('ventas.metricas') }}?platform=${platform}&year=${year}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById(`ordenes-${platform}`).innerText =
-                    new Intl.NumberFormat().format(data.total_ordenes ?? 0);
-
-                document.getElementById(`vendido-${platform}`).innerText =
-                    "$ " + new Intl.NumberFormat('es-CO').format(data.total_vendido ?? 0);
-
-                document.getElementById(`ticket-${platform}`).innerText =
-                    "$ " + new Intl.NumberFormat('es-CO').format(Math.round(data.ticket_promedio ?? 0));
-            })
-            .catch(() => {
-                document.getElementById(`ordenes-${platform}`).innerText = "–";
-                document.getElementById(`vendido-${platform}`).innerText = "–";
-                document.getElementById(`ticket-${platform}`).innerText = "–";
+            plataformasActivas.forEach(slug => {
+                loadMetrics(slug, 'todos');
             });
-    }
+        });
 
-    document.addEventListener("DOMContentLoaded", function () {
-        loadMetrics('inout', 'todos');
-        loadMetrics('rappi', 'todos');
-    });
-    </script>
+        // 3. Lógica del Menú Desplegable (Toggle)
+        function toggleYearMenu(slug) {
+            let menu = document.getElementById('year-menu-' + slug);
+            if (!menu) return;
 
-    <script>
-    document.addEventListener("DOMContentLoaded", function () {
+            // Cerrar otros menús abiertos
+            document.querySelectorAll('.year-menu').forEach(m => {
+                if (m !== menu) m.style.display = 'none';
+            });
 
-        @foreach ($plataformas as $p)
-            @if (in_array($p['slug'], ['inout', 'rappi', 'didi']))
-                fetch("{{ route('ventas.metricas') }}?platform={{ $p['slug'] }}&year={{ $p['year'] }}")
-                    .then(res => res.json())
-                    .then(data => {
+            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+        }
 
-                        document.getElementById("ordenes-{{ $p['slug'] }}").innerText =
-                            new Intl.NumberFormat().format(data.total_ordenes ?? 0);
-
-                        document.getElementById("vendido-{{ $p['slug'] }}").innerText =
-                            "$ " + new Intl.NumberFormat('es-CO').format(data.total_vendido ?? 0);
-
-                        document.getElementById("ticket-{{ $p['slug'] }}").innerText =
-                            "$ " + new Intl.NumberFormat('es-CO').format(Math.round(data.ticket_promedio ?? 0));
-                    })
-                    .catch(() => {
-                        document.getElementById("ordenes-{{ $p['slug'] }}").innerText = "–";
-                        document.getElementById("vendido-{{ $p['slug'] }}").innerText = "–";
-                        document.getElementById("ticket-{{ $p['slug'] }}").innerText = "–";
-                    });
-            @endif
-        @endforeach
-
-    });
+        // Cerrar menús al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.year-dropdown')) {
+                document.querySelectorAll('.year-menu').forEach(m => m.style.display = 'none');
+            }
+        });
     </script>
 
 </body>
