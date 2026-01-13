@@ -10,6 +10,15 @@
         'dev' => true,
     ),
     'versions' => array(
+        'barryvdh/laravel-debugbar' => array(
+            'pretty_version' => 'v3.16.3',
+            'version' => '3.16.3.0',
+            'reference' => 'c91e57ea113edd6526f5b8cd6b1c6ee02c67b28e',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../barryvdh/laravel-debugbar',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
         'barryvdh/laravel-dompdf' => array(
             'pretty_version' => 'v3.1.1',
             'version' => '3.1.1.0',
@@ -18,6 +27,24 @@
             'install_path' => __DIR__ . '/../barryvdh/laravel-dompdf',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'barryvdh/laravel-ide-helper' => array(
+            'pretty_version' => 'v3.6.1',
+            'version' => '3.6.1.0',
+            'reference' => 'b106f7ee85f263c4f103eca49e7bf3862c2e5e75',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../barryvdh/laravel-ide-helper',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+        'barryvdh/reflection-docblock' => array(
+            'pretty_version' => 'v2.4.0',
+            'version' => '2.4.0.0',
+            'reference' => 'd103774cbe7e94ddee7e4870f97f727b43fe7201',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../barryvdh/reflection-docblock',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'brick/math' => array(
             'pretty_version' => '0.14.0',
@@ -36,6 +63,15 @@
             'install_path' => __DIR__ . '/../carbonphp/carbon-doctrine-types',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'composer/class-map-generator' => array(
+            'pretty_version' => '1.7.1',
+            'version' => '1.7.1.0',
+            'reference' => '8f5fa3cc214230e71f54924bd0197a3bcc705eb1',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/./class-map-generator',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'composer/pcre' => array(
             'pretty_version' => '3.3.2',
@@ -634,6 +670,12 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'maximebf/debugbar' => array(
+            'dev_requirement' => true,
+            'replaced' => array(
+                0 => 'v2.2.6',
+            ),
+        ),
         'mockery/mockery' => array(
             'pretty_version' => '1.6.12',
             'version' => '1.6.12.0',
@@ -747,6 +789,15 @@
             'install_path' => __DIR__ . '/../phiki/phiki',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'php-debugbar/php-debugbar' => array(
+            'pretty_version' => 'v2.2.6',
+            'version' => '2.2.6.0',
+            'reference' => 'abb9fa3c5c8dbe7efe03ddba56782917481de3e8',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../php-debugbar/php-debugbar',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'phpoffice/phpspreadsheet' => array(
             'pretty_version' => '1.30.0',
@@ -1126,6 +1177,15 @@
             'install_path' => __DIR__ . '/../sebastian/version',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'spatie/laravel-permission' => array(
+            'pretty_version' => '6.24.0',
+            'version' => '6.24.0.0',
+            'reference' => '76adb1fc8d07c16a0721c35c4cc330b7a12598d7',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../spatie/laravel-permission',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'spatie/once' => array(
             'dev_requirement' => false,
