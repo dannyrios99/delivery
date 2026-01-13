@@ -248,64 +248,97 @@
         </div>
 
 
-        <div class="modal fade" id="modalEditarTarea" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <form method="POST" id="formEditarTarea" style="width: 100%">
-                    @csrf
-                    @method('PUT')
+      <div class="modal fade" id="modalEditarTarea" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <form method="POST" id="formEditarTarea" style="width: 100%">
+            @csrf
+            @method('PUT')
 
-                    <div class="modal-content">
+            <div class="modal-content">
 
-                        <div class="modal-header">
-                            <h5 class="modal-title">Editar tarea</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
+                {{-- HEADER --}}
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar tarea</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
 
-                        <div class="modal-body">
+                {{-- BODY --}}
+                <div class="modal-body">
 
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Título</label>
-                                <input type="text" name="titulo" id="editTitulo"
-                                    class="form-control form-control-lg" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Descripción</label>
-                                <textarea name="descripcion" id="editDescripcion" class="form-control" rows="3"></textarea>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Prioridad</label>
-                                    <select name="prioridad" id="editPrioridad" class="form-select">
-                                        <option value="baja">Baja</option>
-                                        <option value="media">Media</option>
-                                        <option value="alta">Alta</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Fecha límite</label>
-                                    <input type="date" name="fecha_limite" id="editFecha" class="form-control">
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">
-                                Cancelar
-                            </button>
-
-                            <button class="btn btn-primary">
-                                Guardar cambios
-                            </button>
-                        </div>
-
+                    {{-- TÍTULO --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Título</label>
+                        <input type="text"
+                               name="titulo"
+                               id="editTitulo"
+                               class="form-control form-control-lg"
+                               required>
                     </div>
-                </form>
+
+                    {{-- DESCRIPCIÓN --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Descripción</label>
+                        <textarea name="descripcion"
+                                  id="editDescripcion"
+                                  class="form-control"
+                                  rows="3"></textarea>
+                    </div>
+
+                    {{-- PRIORIDAD + FECHA --}}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Prioridad</label>
+                            <select name="prioridad"
+                                    id="editPrioridad"
+                                    class="form-select">
+                                <option value="baja">Baja</option>
+                                <option value="media">Media</option>
+                                <option value="alta">Alta</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha límite</label>
+                            <input type="date"
+                                   name="fecha_limite"
+                                   id="editFecha"
+                                   class="form-control">
+                        </div>
+                    </div>
+
+                    {{-- CHECKLIST --}}
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold">
+                            Checklist
+                        </label>
+
+                        <div id="editChecklistContainer"></div>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary mt-2"
+                                onclick="agregarChecklistEdit()">
+                            + Agregar ítem
+                        </button>
+                    </div>
+
+                </div>
+
+                {{-- FOOTER --}}
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button class="btn btn-primary">
+                        Guardar cambios
+                    </button>
+                </div>
+
             </div>
-        </div>
+        </form>
+    </div>
+</div>
+
 
 
         <div class="modal fade" id="modalTarea" tabindex="-1">
@@ -562,34 +595,89 @@
             }
         </script>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
+<script>
+let checklistEditIndex = 0;
 
-                const modal = document.getElementById('modalEditarTarea');
+document.addEventListener('DOMContentLoaded', function () {
 
-                modal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget;
+    const modal = document.getElementById('modalEditarTarea');
 
-                    const tareaId = button.getAttribute('data-id');
+    modal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
 
-                    document.getElementById('formEditarTarea')
-                        .action = `/tareas/${tareaId}`;
+        const tareaId = button.getAttribute('data-id');
 
-                    document.getElementById('editTitulo').value =
-                        button.getAttribute('data-titulo') ?? '';
+        // Action del form
+        document.getElementById('formEditarTarea').action = `/tareas/${tareaId}`;
 
-                    document.getElementById('editDescripcion').value =
-                        button.getAttribute('data-descripcion') ?? '';
+        // Campos básicos
+        document.getElementById('editTitulo').value =
+            button.getAttribute('data-titulo') ?? '';
 
-                    document.getElementById('editPrioridad').value =
-                        button.getAttribute('data-prioridad') ?? 'media';
+        document.getElementById('editDescripcion').value =
+            button.getAttribute('data-descripcion') ?? '';
 
-                    document.getElementById('editFecha').value =
-                        button.getAttribute('data-fecha') ?? '';
+        document.getElementById('editPrioridad').value =
+            button.getAttribute('data-prioridad') ?? 'media';
+
+        document.getElementById('editFecha').value =
+            button.getAttribute('data-fecha') ?? '';
+
+        // Limpiar checklist
+        const container = document.getElementById('editChecklistContainer');
+        container.innerHTML = '';
+        checklistEditIndex = 0;
+
+        // 🔥 Cargar checklist por AJAX
+        fetch(`/tareas/${tareaId}/checklist`)
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(item => {
+                    agregarChecklistEdit(item);
                 });
-
             });
-        </script>
+    });
+
+});
+
+function agregarChecklistEdit(item = null) {
+    const container = document.getElementById('editChecklistContainer');
+
+    const div = document.createElement('div');
+    div.classList.add('d-flex', 'align-items-center', 'mb-2');
+
+    div.innerHTML = `
+        <input type="hidden"
+               name="checklist[${checklistEditIndex}][id]"
+               value="${item?.id ?? ''}">
+
+        <input type="hidden"
+               name="checklist[${checklistEditIndex}][completado]"
+               value="${item?.completado ?? 0}">
+
+        <input type="checkbox"
+               class="form-check-input me-2"
+               ${item?.completado ? 'checked' : ''}
+               onchange="this.previousElementSibling.value = this.checked ? 1 : 0">
+
+        <input type="text"
+               name="checklist[${checklistEditIndex}][texto]"
+               class="form-control form-control-sm me-2"
+               value="${item?.texto ?? ''}"
+               placeholder="Nuevo ítem">
+
+        <button type="button"
+                class="btn btn-sm btn-outline-danger"
+                onclick="this.parentElement.remove()">
+            ✕
+        </button>
+    `;
+
+    container.appendChild(div);
+    checklistEditIndex++;
+}
+</script>
+
 
         <!-- NOTIFICACIONES SWEETALERT -->
         @if (Session::has('success'))

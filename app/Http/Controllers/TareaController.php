@@ -102,22 +102,62 @@ class TareaController extends Controller
 
 public function update(Request $request, Tarea $tarea)
 {
-    $request->validate([
-        'titulo' => 'required|string|max:255',
-        'descripcion' => 'nullable|string',
-        'prioridad' => 'nullable|in:baja,media,alta',
-        'fecha_limite' => 'nullable|date',
-    ]);
+    try {
+        DB::beginTransaction();
 
-    $tarea->update([
-        'titulo' => $request->titulo,
-        'descripcion' => $request->descripcion,
-        'prioridad' => $request->prioridad,
-        'fecha_limite' => $request->fecha_limite,
-    ]);
+        $tarea->update([
+            'titulo' => $request->titulo,
+            'descripcion' => $request->descripcion,
+            'prioridad' => $request->prioridad,
+            'fecha_limite' => $request->fecha_limite,
+        ]);
 
-    return redirect()->back()
-        ->with('success', 'Tarea actualizada correctamente');
+        // Procesar checklist
+        if ($request->has('checklist')) {
+
+            $idsRecibidos = collect($request->checklist)
+                ->pluck('id')
+                ->filter()
+                ->toArray();
+
+            // Eliminar ítems borrados
+            TareaChecklist::where('tarea_id', $tarea->id)
+                ->whereNotIn('id', $idsRecibidos)
+                ->delete();
+
+            foreach ($request->checklist as $orden => $item) {
+
+                if (!empty($item['id'])) {
+                    // actualizar
+                    TareaChecklist::where('id', $item['id'])->update([
+                        'texto' => $item['texto'],
+                        'completado' => $item['completado'] ?? 0,
+                        'orden' => $orden,
+                    ]);
+                } else {
+                    // crear nuevo
+                    TareaChecklist::create([
+                        'tarea_id' => $tarea->id,
+                        'texto' => $item['texto'],
+                        'completado' => $item['completado'] ?? 0,
+                        'orden' => $orden,
+                    ]);
+                }
+            }
+        }
+
+        DB::commit();
+
+        return redirect()->back()
+            ->with('success', 'Tarea actualizada correctamente');
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        return redirect()->back()
+            ->with('error', 'No se pudo actualizar la tarea');
+    }
 }
 
 

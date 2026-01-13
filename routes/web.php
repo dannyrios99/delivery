@@ -35,21 +35,21 @@ Route::middleware('auth')->group(function () {
     //Dashboard
     Route::get('/dashboard', function () {
         $user = auth()->user();
-    
+
         // Si no está autenticado
         if (! $user) {
             return redirect()->route('login');
         }
-    
+
         // Restringir rol lector
         if (! in_array($user->role, ['admin'])) {
             return redirect()->route('activos.index');
         }
-    
+
         // Roles permitidos sí ven el dashboard
         return app(DashboardController::class)->index();
     })->middleware(['auth', 'verified'])->name('dashboard');
-    
+
     //Usuarios
     Route::get('/usuarios', [UsuarioController::class, 'show'])->name('usuarios.index');
     Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
@@ -101,6 +101,11 @@ Route::middleware('auth')->group(function () {
     ->only(['store', 'show']);
     Route::resource('tareas', TareaController::class)
     ->only(['store', 'update', 'destroy']);
+    Route::get('tareas/{tarea}/checklist', function (\App\Models\Tarea $tarea) {
+    return $tarea->checklist()
+        ->orderBy('orden')
+        ->get();
+});
 
 
     Route::patch(
