@@ -2,12 +2,15 @@
 <html lang="es">
 
 <head>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <title>{{ $proyecto->nombre }}</title>
     <link rel="icon" href="{{ asset('assets/images/LogoIco.png') }}" type="image/x-icon">
 
     <link href="{{ asset('assets/plugins/DataTables/datatables.min.css') }}" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         .dropdown-item i {
             width: 16px;
@@ -68,6 +71,157 @@
             background-color: #e06d2a !important;
             box-shadow: 0 7px 23px -8px #e06d2a !important;
         }
+
+        body { background-color: #f0f2f5; }
+
+        .kanban-wrapper {
+            display: flex;
+            gap: 1.5rem;
+            padding: 20px;
+            align-items: flex-start;
+        }
+
+        /* Estilo de la Columna (Lista) */
+        .kanban-column {
+            width: 320px;
+            min-width: 320px;
+            background: transparent;
+            border: none;
+        }
+
+        .column-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #172b4d;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Estilo de la Tarjeta (Card) */
+        .task-card {
+            background: #ffffff;
+            border-radius: 16px; /* Bordes más redondeados como la imagen */
+            padding: 20px;
+            margin-bottom: 15px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Sombra muy sutil */
+            transition: transform 0.2s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Tags/Etiquetas */
+        .tag {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        
+        .tag-copywriting { background: #fdf2ff; color: #d633ff; }
+        .tag-design { background: #eef2ff; color: #4338ca; }
+        .tag-illustration { background: #f0fdf4; color: #15803d; }
+
+        .task-text {
+            color: #334155;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .task-footer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .task-footer i { font-size: 0.9rem; }
+
+        /* Botón añadir invisible */
+        .btn-add-list {
+            background: rgba(255,255,255,0.5);
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            color: #64748b;
+            padding: 15px;
+            font-weight: 600;
+        }
+
+        /* Botón circular de la parte superior derecha */
+        .btn-add-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px dashed #cbd5e1;
+            background-color: transparent;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .btn-add-circle:hover {
+            background-color: #ffffff;
+            border-color: #818cf8;
+            color: #818cf8;
+            transform: scale(1.1);
+        }
+
+        /* Estilo para los círculos decorativos (Avatares) */
+        .avatar-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 3px solid #f0f2f5; /* Color del fondo para el efecto de traslape */
+            margin-left: -10px; /* Hace que se encimen un poco */
+        }
+
+        /* Ajuste para que el kanban-wrapper no tenga el botón flotando al final */
+        .kanban-wrapper {
+            display: flex;
+            overflow-x: auto;
+            gap: 2rem;
+            padding: 10px;
+            align-items: flex-start;
+        }
+
+        .hover-opacity-100 {
+            transition: all 0.2s ease;
+        }
+        .hover-opacity-100:hover {
+            opacity: 1 !important;
+            transform: scale(1.15); /* Crece ligeramente al pasar el mouse */
+        }
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+
+        .select2-container .select2-selection--multiple {
+            min-height: 45px;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        .avatar-group .avatar-circle:first-child {
+            margin-left: 0 !important;
+        }
+        .task-card:hover {
+            transform: translateY(-3px);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
     </style>
 </head>
 
@@ -93,145 +247,118 @@
                                         {{ $proyecto->nombre }}
                                     </h4>
 
-                                    {{-- <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                        data-bs-target="#modalTarea">
-                                        + Nueva tarea
-                                    </button> --}}
+                                    <div class="d-flex align-items-center gap-3">
+                                        {{-- Aquí podrías poner avatares como en la imagen --}}
+                                        <div class="d-flex -space-x-2">
+                                            <div class="avatar-circle" style="background-color: #818cf8;"></div>
+                                            <div class="avatar-circle" style="background-color: #6366f1;"></div>
+                                            <div class="avatar-circle" style="background-color: #4f46e5;"></div>
+                                        </div>
+
+                                        {{-- Botón Estilo Opción 2 --}}
+                                        <button class="btn-add-circle" data-bs-toggle="modal" data-bs-target="#modalGrupo" title="Añadir otra lista">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {{-- BODY DEL PROYECTO --}}
                                 <div class="card-body">
-
-                                    {{-- KANBAN --}}
                                     {{-- KANBAN DINÁMICO POR GRUPOS --}}
-                                    <div class="row g-3">
-
+                                    <div class="kanban-wrapper">
                                         @foreach ($proyecto->grupos as $grupo)
-                                            <div class="col-md-3">
-                                                <div class="card h-100 border">
+                                            <div class="kanban-column">
+                                                {{-- Título de la columna --}}
+                                                <div class="column-title px-2">
+                                                    <span>{{ $grupo->nombre }}</span>
+                                                    <i class="fas fa-ellipsis-h text-muted" style="cursor: pointer;"></i>
+                                                </div>
 
-                                                    {{-- HEADER DEL GRUPO --}}
-                                                    <div
-                                                        class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
-                                                        <span>{{ $grupo->nombre }}</span>
+                                                {{-- Contenedor de Cards --}}
+                                                <div class="column-body">
+                                                    @foreach ($grupo->tareas as $tarea)
+                                                        <div class="task-card p-3 mb-3 border-0 shadow-sm bg-white rounded-4" 
+                                                            role="button"
+                                                            style="cursor: pointer;"
+                                                            onclick="if(!event.target.closest('.dropdown')) { abrirTarea({{ $tarea->load(['responsables', 'checklist'])->toJson() }}); (new bootstrap.Offcanvas(document.getElementById('panelTarea'))).show(); }">
 
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-sm btn-light border-0" type="button"
-                                                                data-bs-toggle="dropdown" aria-expanded="false">
-                                                                &#9776; {{-- icono hamburguesa --}}
-                                                            </button>
-
-                                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                                <li>
-                                                                    <a class="dropdown-item d-flex align-items-center gap-2"
-                                                                        href="#" data-bs-toggle="modal"
-                                                                        data-bs-target="#modalEditarGrupo{{ $grupo->id }}">
-                                                                        <i class="fas fa-pen"></i>
-                                                                        <span>Editar</span>
-                                                                    </a>
-                                                                </li>
-
-                                                                <li>
-                                                                    <a class="dropdown-item d-flex align-items-center gap-2 text-danger"
-                                                                        href="#" data-bs-toggle="modal"
-                                                                        data-bs-target="#modalEliminarGrupo{{ $grupo->id }}">
-                                                                        <i class="fas fa-trash"></i>
-                                                                        <span>Eliminar</span>
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
-
-                                                        </div>
-                                                    </div>
-                                                    {{-- TAREAS DEL GRUPO --}}
-                                                    {{-- ================= CONTENIDO DEL GRUPO ================= --}}
-                                                    <div class="card-body p-2">
-
-                                                        @forelse ($grupo->tareas as $tarea)
-                                                            <div class="task-card mb-2" role="button"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#modalEditarTarea"
-                                                                data-id="{{ $tarea->id }}"
-                                                                data-titulo="{{ $tarea->titulo }}"
-                                                                data-descripcion="{{ $tarea->descripcion }}"
-                                                                data-prioridad="{{ $tarea->prioridad }}"
-                                                                data-fecha="{{ $tarea->fecha_limite }}">
-                                                                <div
-                                                                    class="task-content d-flex justify-content-between align-items-center">
-
-                                                                    {{-- TÍTULO --}}
-                                                                    <span class="task-title">
-                                                                        {{ $tarea->titulo }}
-                                                                    </span>
-
-                                                                    {{-- ACCIONES --}}
-                                                                    <div class="task-actions"
-                                                                        onclick="event.stopPropagation();">
-                                                                        <form method="POST"
-                                                                            action="{{ route('tareas.mover', $tarea->id) }}">
-                                                                            @csrf
-                                                                            @method('PATCH')
-
-                                                                            <select name="grupo_id"
-                                                                                class="form-select form-select-sm task-select"
-                                                                                onchange="this.form.submit()">
-                                                                                @foreach ($proyecto->grupos as $g)
-                                                                                    <option value="{{ $g->id }}"
-                                                                                        {{ $tarea->grupo_id == $g->id ? 'selected' : '' }}>
-                                                                                        {{ $g->nombre }}
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </form>
-                                                                    </div>
-
+                                                            {{-- Header: Prioridad y Menú Mover --}}
+                                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                                <span class="badge rounded-pill bg-{{ $tarea->prioridad == 'alta' ? 'danger' : ($tarea->prioridad == 'media' ? 'warning' : 'info') }} px-2 py-1" style="font-size: 0.65rem; text-transform: uppercase;">
+                                                                    {{ $tarea->prioridad ?? 'Normal' }}
+                                                                </span>
+                                                                
+                                                                <div class="dropdown">
+                                                                    <i class="fas fa-ellipsis-h text-muted small" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer; padding: 5px;"></i>
+                                                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
+                                                                        <li class="dropdown-header pb-1 small fw-bold text-uppercase">Mover a:</li>
+                                                                        @foreach ($proyecto->grupos as $g)
+                                                                            @if($g->id !== $grupo->id)
+                                                                                <li>
+                                                                                    <form action="{{ route('tareas.mover', $tarea->id) }}" method="POST">
+                                                                                        @csrf @method('PATCH')
+                                                                                        <input type="hidden" name="grupo_id" value="{{ $g->id }}">
+                                                                                        <button type="submit" class="dropdown-item small d-flex align-items-center">
+                                                                                            <i class="fas fa-arrow-right me-2 text-muted" style="font-size: 0.7rem;"></i>
+                                                                                            {{ $g->nombre }}
+                                                                                        </button>
+                                                                                    </form>
+                                                                                </li>
+                                                                            @endif
+                                                                        @endforeach
+                                                                    </ul>
                                                                 </div>
                                                             </div>
 
-                                                        @empty
-                                                            <div class="text-center py-3">
-                                                                <small class="text-muted">No hay tareas</small>
+                                                            {{-- Título --}}
+                                                            <div class="task-text fw-bold text-dark mb-2" style="font-size: 0.85rem; line-height: 1.3;">
+                                                                {{ $tarea->titulo }}
                                                             </div>
-                                                        @endforelse
 
-                                                    </div>
+                                                            {{-- NUEVA SECCIÓN: Responsables como Etiquetas (Chips) --}}
+                                                            @if($tarea->responsables->count() > 0)
+                                                                <div class="d-flex flex-wrap gap-1 mb-3">
+                                                                    @foreach($tarea->responsables as $resp)
+                                                                        <div class="d-inline-flex align-items-center bg-light rounded-pill pe-2" style="border: 1px solid #eee;">
+                                                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" 
+                                                                                style="width: 20px; height: 20px; font-size: 0.55rem;">
+                                                                                {{ strtoupper(substr($resp->name, 0, 1)) }}
+                                                                            </div>
+                                                                            <span class="ms-1 text-dark" style="font-size: 0.65rem; white-space: nowrap;">{{ $resp->name }}</span>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
 
-                                                    {{-- ================= FOOTER: NUEVA TAREA ================= --}}
-                                                    <div class="card-footer bg-white border-top p-2">
-                                                        <button class="btn btn-sm btn-outline-primary w-100"
-                                                            data-bs-toggle="modal" data-bs-target="#modalTarea"
-                                                            data-grupo="{{ $grupo->id }}">
-                                                            + Nueva tarea
-                                                        </button>
-                                                    </div>
+                                                            {{-- Footer: Metadata (Fecha, Checklist, Comentarios) --}}
+                                                            <div class="task-footer d-flex justify-content-start align-items-center gap-3 pt-2 border-top border-light text-muted" style="font-size: 0.7rem;">
+                                                                <span title="Fecha límite">
+                                                                    <i class="far fa-calendar-alt me-1"></i> 
+                                                                    {{ $tarea->fecha_limite ? \Carbon\Carbon::parse($tarea->fecha_limite)->format('d M') : 'Sin fecha' }}
+                                                                </span>
+                                                                <span title="Checklist">
+                                                                    <i class="fas fa-tasks me-1"></i>
+                                                                    {{ $tarea->checklist->where('completado', 1)->count() }}/{{ $tarea->checklist->count() }}
+                                                                </span>
+                                                                <span title="Comentarios">
+                                                                    <i class="far fa-comment me-1"></i>
+                                                                    {{ $tarea->comentarios->count() }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
 
-
+                                                    {{-- Botón para añadir tarea dentro de la lista --}}
+                                                    <button class="btn w-100 text-muted small fw-bold mt-2 border-0" 
+                                                            data-bs-toggle="offcanvas" 
+                                                            data-bs-target="#panelTarea" 
+                                                            onclick="abrirTarea(null, {{ $grupo->id }})">
+                                                        + Añadir tarea
+                                                    </button>
                                                 </div>
                                             </div>
                                         @endforeach
-
-                                        {{-- CREAR NUEVO GRUPO --}}
-                                        {{-- CREAR NUEVO GRUPO (MISMO ESTILO) --}}
-                                        <div class="col-md-3">
-                                            <div class="card h-100 border">
-
-                                                {{-- BODY --}}
-                                                <div class="card-body d-flex align-items-center justify-content-center">
-                                                    <button class="btn btn-outline-secondary btn-lg rounded-circle"
-                                                        data-bs-toggle="modal" data-bs-target="#modalGrupo"
-                                                        style="width: 60px; height: 60px;">
-                                                        +
-                                                    </button>
-                                                </div>
-
-                                            </div>
-                                        </div>
-
-
-
                                     </div>
-
-
                                 </div>
 
                             </div>
@@ -244,186 +371,96 @@
             </div>
         </div>
 
-
-      <div class="modal fade" id="modalEditarTarea" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <form method="POST" id="formEditarTarea" style="width: 100%">
-            @csrf
-            @method('PUT')
-
-            <div class="modal-content">
-
-                {{-- HEADER --}}
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar tarea</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="offcanvas offcanvas-end border-0 shadow" tabindex="-1" id="panelTarea" style="width: 600px; border-radius: 24px 0 0 24px;">
+            <div class="offcanvas-header p-4 border-bottom bg-light">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary-subtle text-primary me-2 px-3 py-2 rounded-pill" id="badge_grupo">Estado</span>
+                    <h5 class="offcanvas-title fw-bold m-0" id="panelTareaLabel">Detalles de Tarea</h5>
                 </div>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+            </div>
 
-                {{-- BODY --}}
-                <div class="modal-body">
+            <div class="offcanvas-body p-4">
+                <form id="formTareaPrincipal" action="{{ route('tareas.store') }}" method="POST">
+                    @csrf
+                    <div id="method_field"></div> {{-- Se llenará con PUT al editar --}}
+                    <input type="hidden" name="proyecto_id" value="{{ $proyecto->id }}">
+                    <input type="hidden" name="grupo_id" id="panel_grupo_id">
 
-                    {{-- TÍTULO --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Título</label>
-                        <input type="text"
-                               name="titulo"
-                               id="editTitulo"
-                               class="form-control form-control-lg"
-                               required>
-                    </div>
+                    <input type="text" name="titulo" id="panel_titulo" 
+                        class="form-control form-control-lg border-0 bg-transparent fw-bold p-0 mb-3" 
+                        style="font-size: 1.8rem;" placeholder="Nombre de la tarea...">
 
-                    {{-- DESCRIPCIÓN --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Descripción</label>
-                        <textarea name="descripcion"
-                                  id="editDescripcion"
-                                  class="form-control"
-                                  rows="3"></textarea>
-                    </div>
-
-                    {{-- PRIORIDAD + FECHA --}}
-                    <div class="row g-3 mb-4">
+                    <div class="row g-4 mb-4">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Prioridad</label>
-                            <select name="prioridad"
-                                    id="editPrioridad"
-                                    class="form-select">
+                            <div class="mb-3">
+                                <label class="fw-bold mb-2">Responsables</label>
+                                <select name="responsables[]" id="panel_responsables" class="form-control select2-multiple" multiple="multiple" style="width: 100%">
+                                    @foreach($usuarios as $user)
+                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="text-muted small fw-bold text-uppercase d-block mb-2">Prioridad</label>
+                            <select name="prioridad" id="panel_prioridad" class="form-select border-0 bg-light shadow-none">
                                 <option value="baja">Baja</option>
                                 <option value="media">Media</option>
                                 <option value="alta">Alta</option>
                             </select>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Fecha límite</label>
-                            <input type="date"
-                                   name="fecha_limite"
-                                   id="editFecha"
-                                   class="form-control">
+                        <div class="col-md-3">
+                            <label class="text-muted small fw-bold text-uppercase d-block mb-2">Límite</label>
+                            <input type="date" name="fecha_limite" id="panel_fecha" class="form-control border-0 bg-light shadow-none">
                         </div>
                     </div>
 
-                    {{-- CHECKLIST --}}
-                    <div class="mb-2">
-                        <label class="form-label fw-semibold">
-                            Checklist
+                    <div class="mb-4">
+                        <label class="text-muted small fw-bold text-uppercase d-block mb-2">
+                            <i class="fas fa-align-left me-2"></i>Descripción
                         </label>
-
-                        <div id="editChecklistContainer"></div>
-
-                        <button type="button"
-                                class="btn btn-sm btn-outline-secondary mt-2"
-                                onclick="agregarChecklistEdit()">
-                            + Agregar ítem
-                        </button>
+                        <textarea name="descripcion" id="panel_descripcion" 
+                                class="form-control border-0 bg-light shadow-none" 
+                                rows="5" 
+                                style="border-radius: 16px; resize: none; padding: 15px;" 
+                                placeholder="Añade detalles sobre esta tarea..."></textarea>
                     </div>
 
-                </div>
+                    <hr class="opacity-25">
 
-                {{-- FOOTER --}}
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-
-                    <button class="btn btn-primary">
-                        Guardar cambios
-                    </button>
-                </div>
-
-            </div>
-        </form>
-    </div>
-</div>
-
-
-
-        <div class="modal fade" id="modalTarea" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <form method="POST" action="{{ route('tareas.store') }}" style="width: 100%">
-                    @csrf
-
-                    {{-- IDs ocultos --}}
-                    <input type="hidden" name="grupo_id" id="inputGrupoId">
-                    <input type="hidden" name="proyecto_id" value="{{ $proyecto->id }}">
-
-                    <div class="modal-content">
-
-                        {{-- HEADER --}}
-                        <div class="modal-header">
-                            <h5 class="modal-title">Nueva tarea</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="section-checklist mb-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold m-0"><i class="fas fa-check-double me-2 text-success"></i>Checklist</h6>
+                            <button type="button" class="btn btn-sm btn-light rounded-pill px-3" onclick="addChecklistItem()">+ Agregar item</button>
                         </div>
-
-                        {{-- BODY --}}
-                        <div class="modal-body">
-
-                            {{-- TÍTULO --}}
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Título</label>
-                                <input type="text" name="titulo" class="form-control form-control-lg"
-                                    placeholder="Ej: Diseñar pantalla de login" required>
-                            </div>
-
-                            {{-- DESCRIPCIÓN --}}
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Descripción</label>
-                                <textarea name="descripcion" class="form-control" rows="3"
-                                    placeholder="Describe brevemente la tarea (opcional)"></textarea>
-                            </div>
-
-                            {{-- PRIORIDAD + FECHA --}}
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Prioridad</label>
-                                    <select name="prioridad" class="form-select">
-                                        <option value="baja">Baja</option>
-                                        <option value="media" selected>Media</option>
-                                        <option value="alta">Alta</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Fecha límite</label>
-                                    <input type="date" name="fecha_limite" class="form-control">
-                                </div>
-                            </div>
-
-                            {{-- CHECKLIST --}}
-                            <div class="mb-2">
-                                <label class="form-label fw-semibold">
-                                    Checklist
-                                </label>
-
-                                <div id="checklistContainer"></div>
-
-                                <button type="button" class="btn btn-sm btn-outline-secondary mt-2"
-                                    onclick="agregarChecklistItem()">
-                                    + Agregar ítem
-                                </button>
-                            </div>
-
+                        <div id="panel-checklist-items">
+                            {{-- Los items se inyectan aquí --}}
                         </div>
+                    </div>
 
-                        {{-- FOOTER --}}
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">
-                                Cancelar
-                            </button>
+                    <input type="hidden" id="panel_tarea_id" name="tarea_id">
 
-                            <button class="btn btn-primary" style="background-color:#e06d2a; color:#fff;">
-                                Crear tarea
-                            </button>
+                    <div id="seccion_comentarios" class="mt-4" style="display: none;">
+                        <h6 class="fw-bold mb-3"><i class="far fa-comments me-2 text-info"></i>Comentarios</h6>
+                        <div class="chat-container bg-light p-3 rounded-4 mb-3" id="lista_comentarios" style="max-height: 200px; overflow-y: auto;">
+                            {{-- Los comentarios se cargan vía AJAX --}}
                         </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control border-0 shadow-sm" placeholder="Escribe un comentario..." id="nuevo_comentario">
+                            <button class="btn btn-primary px-3" type="button" onclick="enviarComentario()"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
 
+                    <div class="sticky-bottom bg-white pt-4 mt-5">
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" id="btn_guardar" style="border-radius: 14px;">
+                            Guardar Tarea
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
-
-
-
-
 
         <div class="modal fade" id="modalGrupo" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
@@ -539,6 +576,19 @@
         <script src="{{ asset('assets/plugins/DataTables/datatables.min.js') }}"></script>
 
         <script>
+            $(document).ready(function() {
+                // Inicializamos sobre el ID del select
+                $('#panel_responsables').select2({
+                    placeholder: "Selecciona responsables...",
+                    allowClear: true,
+                    width: '100%',
+                    // Esto asegura que el buscador funcione dentro de paneles flotantes
+                    dropdownParent: $('#formTareaPrincipal').parent() 
+                });
+            });
+        </script>
+
+        <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const modalTarea = document.getElementById('modalTarea');
 
@@ -560,90 +610,311 @@
         </script>
 
         <script>
-            let checklistIndex = 0;
+            const authUserId = {{ auth()->id() }};
+        </script>
 
-            function agregarChecklistItem() {
-                const container = document.getElementById('checklistContainer');
+        <script>
+            // 1. Declaraciones globales únicas
+            if (typeof checklistIndex === 'undefined') {
+                window.checklistIndex = 0;
+            }
 
-                const item = document.createElement('div');
-                item.classList.add('d-flex', 'align-items-center', 'mb-2');
+            function abrirTarea(tarea = null, grupoId = null) {
+                const form = document.getElementById('formTareaPrincipal');
+                const methodField = document.getElementById('method_field');
+                const panelTituloLabel = document.getElementById('panelTareaLabel');
+                const selectResponsables = document.getElementById('panel_responsables');
+                const checklistContainer = document.getElementById('panel-checklist-items');
+                const listaComentarios = document.getElementById('lista_comentarios');
 
-                item.innerHTML = `
-        <input type="hidden" name="checklist[${checklistIndex}][completado]" value="0">
+                // Limpieza previa de contenedores
+                checklistContainer.innerHTML = '';
+                window.checklistIndex = 0; 
+                if (listaComentarios) listaComentarios.innerHTML = ''; 
+                
+                // Limpieza de Select2
+                if (selectResponsables) {
+                    $(selectResponsables).val(null).trigger('change');
+                }
 
-        <input type="checkbox"
-               class="form-check-input me-2"
-               onchange="this.previousElementSibling.value = this.checked ? 1 : 0">
+                if (tarea) {
+                    // ================= MODO EDICIÓN =================
+                    panelTituloLabel.innerText = "Actualizar Tarea";
+                    form.action = `/tareas/${tarea.id}`; 
+                    methodField.innerHTML = '<input type="hidden" name="_method" value="PUT">';
+                    
+                    if(document.getElementById('panel_tarea_id')) {
+                        document.getElementById('panel_tarea_id').value = tarea.id;
+                    }
 
-        <input type="text"
-               name="checklist[${checklistIndex}][texto]"
-               class="form-control form-control-sm me-2"
-               placeholder="Ej: Crear wireframes">
+                    document.getElementById('panel_titulo').value = tarea.titulo || '';
+                    document.getElementById('panel_prioridad').value = tarea.prioridad || 'media';
+                    document.getElementById('panel_fecha').value = tarea.fecha_limite || '';
+                    document.getElementById('panel_descripcion').value = tarea.descripcion || '';
 
-        <button type="button"
-                class="btn btn-sm btn-outline-danger"
-                onclick="this.parentElement.remove()">
-            ✕
-        </button>
-    `;
+                    // Cargar Responsables en Select2
+                    if (tarea.responsables && selectResponsables) {
+                        const responsableIds = tarea.responsables.map(resp => resp.id);
+                        $(selectResponsables).val(responsableIds).trigger('change');
+                    }
 
-                container.appendChild(item);
-                checklistIndex++;
+                    // Cargar Checklist existente
+                    if (tarea.checklist && tarea.checklist.length > 0) {
+                        tarea.checklist.forEach(item => {
+                            addChecklistItem(item.texto, item.completado, item.id);
+                        });
+                    }
+
+                    // Cargar Comentarios
+                    const secComentarios = document.getElementById('seccion_comentarios');
+                    if(secComentarios) {
+                        secComentarios.style.display = "block";
+                        if (tarea.comentarios && tarea.comentarios.length > 0) {
+                            tarea.comentarios.forEach(com => {
+                                listaComentarios.insertAdjacentHTML('beforeend', renderizarComentarioHtml(
+                                    com.user ? com.user.name : 'Usuario', 
+                                    com.contenido, 
+                                    com.fecha_formateada || 'Reciente',
+                                    com.id,
+                                    com.user_id
+                                ));
+                            });
+                        } else {
+                            listaComentarios.innerHTML = '<p class="text-muted small text-center my-3">No hay comentarios aún.</p>';
+                        }
+                    }
+                    document.getElementById('btn_guardar').innerText = "Actualizar Cambios";
+
+                } else {
+                    // ================= MODO CREACIÓN =================
+                    panelTituloLabel.innerText = "Nueva Tarea";
+                    form.action = "{{ route('tareas.store') }}";
+                    methodField.innerHTML = '';
+                    form.reset(); 
+                    if(document.getElementById('panel_tarea_id')) {
+                        document.getElementById('panel_tarea_id').value = '';
+                    }
+                    document.getElementById('panel_grupo_id').value = grupoId;
+                    document.getElementById('btn_guardar').innerText = "Crear Tarea";
+                    
+                    const secComentarios = document.getElementById('seccion_comentarios');
+                    if(secComentarios) secComentarios.style.display = "none";
+                }
+            }
+
+            /**
+             * Esta función va FUERA de abrirTarea para que el botón "+ Agregar ítem" 
+             * del HTML también pueda llamarla.
+             */
+            function addChecklistItem(texto = '', completado = 0, id = null) {
+                const container = document.getElementById('panel-checklist-items');
+                const itemId = `item-wrapper-${window.checklistIndex}`;
+                
+                // Input oculto fundamental para que el controlador reconozca el ID al actualizar
+                const inputId = id ? `<input type="hidden" name="checklist[${window.checklistIndex}][id]" value="${id}">` : '';
+
+                const html = `
+                    <div class="input-group mb-2 shadow-sm border-0 align-items-center bg-white p-1" id="${itemId}" style="border-radius: 12px;">
+                        ${inputId}
+                        <div class="input-group-text border-0 bg-transparent">
+                            <input type="hidden" name="checklist[${window.checklistIndex}][completado]" value="0">
+                            <input class="form-check-input mt-0" type="checkbox" 
+                                name="checklist[${window.checklistIndex}][completado]" 
+                                value="1" ${completado == 1 ? 'checked' : ''} style="cursor:pointer;">
+                        </div>
+                        <input type="text" name="checklist[${window.checklistIndex}][texto]" 
+                            class="form-control border-0 py-2 bg-transparent" 
+                            value="${texto}" placeholder="Tarea secundaria..." style="font-size: 0.9rem;">
+                        <button class="btn btn-link text-danger border-0 p-2" type="button" 
+                            onclick="document.getElementById('${itemId}').remove()" style="text-decoration: none;">
+                            <i class="fas fa-times-circle fa-lg"></i>
+                        </button>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('beforeend', html);
+                window.checklistIndex++;
+            }
+
+            function renderizarComentarioHtml(nombre, texto, fecha, comentarioId, autorId) {
+                const botonEliminar = (authUserId == autorId) 
+                    ? `<button type="button" class="btn btn-link text-danger p-0 border-0 ms-3 opacity-50 hover-opacity-100 transition-all" 
+                            onclick="eliminarComentario(event, ${comentarioId})" 
+                            style="text-decoration: none; display: flex; align-items: center;">
+                            <i class="fas fa-times-circle fa-lg"></i>
+                    </button>` 
+                    : '';
+
+                return `
+                    <div class="mb-3 p-3 bg-white rounded-4 shadow-sm border-start border-info border-4 transition-all" id="comentario-${comentarioId}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="fw-bold text-dark me-2" style="font-size: 0.95rem;">${nombre}</span>
+                                <span class="text-muted" style="font-size: 0.75rem;">${fecha}</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                ${botonEliminar}
+                            </div>
+                        </div>
+                        <p class="mb-0 text-secondary" style="font-size: 0.9rem; line-height: 1.5;">${texto}</p>
+                    </div>
+                `;
             }
         </script>
 
-<script>
-let checklistEditIndex = 0;
+        <script>
+            async function enviarComentario() {
+                const input = document.getElementById('nuevo_comentario');
+                const contenido = input.value.trim();
+                const tareaId = document.getElementById('panel_tarea_id').value;
+                const lista = document.getElementById('lista_comentarios');
 
-document.addEventListener('DOMContentLoaded', function () {
+                if (!contenido || !tareaId) return;
 
-    const modal = document.getElementById('modalEditarTarea');
+                try {
+                    const response = await fetch('/comentarios-tareas', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ tarea_id: tareaId, contenido: contenido })
+                    });
 
-    modal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget;
+                    const data = await response.json();
 
-        const tareaId = button.getAttribute('data-id');
+                    if (data.success) {
+                        const mensajeVacio = lista.querySelector('.text-muted');
+                        if (mensajeVacio && mensajeVacio.textContent.includes('No hay')) {
+                            lista.innerHTML = ''; 
+                        }
 
-        // Action del form
-        document.getElementById('formEditarTarea').action = `/tareas/${tareaId}`;
+                        // Usamos el ID devuelto por el servidor para que el botón de borrar funcione de inmediato
+                        const nuevoHtml = renderizarComentarioHtml(data.nombre, data.contenido, 'Ahora mismo', data.id, authUserId);
+                        
+                        lista.insertAdjacentHTML('afterbegin', nuevoHtml);
+                        input.value = '';
+                        lista.scrollTop = 0; 
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                }
+            }
 
-        // Campos básicos
-        document.getElementById('editTitulo').value =
-            button.getAttribute('data-titulo') ?? '';
+            async function eliminarComentario(e, id) {
+                // Detener cualquier acción del formulario padre
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
 
-        document.getElementById('editDescripcion').value =
-            button.getAttribute('data-descripcion') ?? '';
+                Swal.fire({
+                    title: '¿Eliminar comentario?',
+                    text: "Esta acción no se puede deshacer",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, borrar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'rounded-4 shadow'
+                    }
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await fetch(`/comentarios-tareas/${id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'Content-Type': 'application/json'
+                                }
+                            });
 
-        document.getElementById('editPrioridad').value =
-            button.getAttribute('data-prioridad') ?? 'media';
+                            const data = await response.json();
 
-        document.getElementById('editFecha').value =
-            button.getAttribute('data-fecha') ?? '';
-
-        // Limpiar checklist
-        const container = document.getElementById('editChecklistContainer');
-        container.innerHTML = '';
-        checklistEditIndex = 0;
-
-        // 🔥 Cargar checklist por AJAX
-        fetch(`/tareas/${tareaId}/checklist`)
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(item => {
-                    agregarChecklistEdit(item);
+                            if (data.success) {
+                                const elemento = document.getElementById(`comentario-${id}`);
+                                if (elemento) {
+                                    elemento.style.transform = 'translateX(20px)';
+                                    elemento.style.opacity = '0';
+                                    setTimeout(() => elemento.remove(), 300);
+                                }
+                                
+                                // Notificación pequeña de éxito
+                                Swal.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: 'Eliminado',
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                });
+                            }
+                        } catch (error) {
+                            console.error("Error:", error);
+                            Swal.fire('Error', 'No se pudo eliminar el comentario', 'error');
+                        }
+                    }
                 });
+            }
+        </script>
+
+        
+
+        <script>
+            let checklistEditIndex = 0;
+
+            document.addEventListener('DOMContentLoaded', function() {
+
+                const modal = document.getElementById('modalEditarTarea');
+
+                modal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+
+                    const tareaId = button.getAttribute('data-id');
+
+                    // Action del form
+                    document.getElementById('formEditarTarea').action = `/tareas/${tareaId}`;
+
+                    // Campos básicos
+                    document.getElementById('editTitulo').value =
+                        button.getAttribute('data-titulo') ?? '';
+
+                    document.getElementById('editDescripcion').value =
+                        button.getAttribute('data-descripcion') ?? '';
+
+                    document.getElementById('editPrioridad').value =
+                        button.getAttribute('data-prioridad') ?? 'media';
+
+                    document.getElementById('editFecha').value =
+                        button.getAttribute('data-fecha') ?? '';
+
+                    // Limpiar checklist
+                    const container = document.getElementById('editChecklistContainer');
+                    container.innerHTML = '';
+                    checklistEditIndex = 0;
+
+                    // 🔥 Cargar checklist por AJAX
+                    fetch(`/tareas/${tareaId}/checklist`)
+                        .then(res => res.json())
+                        .then(data => {
+                            data.forEach(item => {
+                                agregarChecklistEdit(item);
+                            });
+                        });
+                });
+
             });
-    });
 
-});
+            function agregarChecklistEdit(item = null) {
+                const container = document.getElementById('editChecklistContainer');
 
-function agregarChecklistEdit(item = null) {
-    const container = document.getElementById('editChecklistContainer');
+                const div = document.createElement('div');
+                div.classList.add('d-flex', 'align-items-center', 'mb-2');
 
-    const div = document.createElement('div');
-    div.classList.add('d-flex', 'align-items-center', 'mb-2');
-
-    div.innerHTML = `
+                div.innerHTML = `
         <input type="hidden"
                name="checklist[${checklistEditIndex}][id]"
                value="${item?.id ?? ''}">
@@ -670,10 +941,10 @@ function agregarChecklistEdit(item = null) {
         </button>
     `;
 
-    container.appendChild(div);
-    checklistEditIndex++;
-}
-</script>
+                container.appendChild(div);
+                checklistEditIndex++;
+            }
+        </script>
 
 
         <!-- NOTIFICACIONES SWEETALERT -->
@@ -706,5 +977,4 @@ function agregarChecklistEdit(item = null) {
     </div>
 
 </body>
-
 </html>

@@ -22,10 +22,15 @@ class Proyecto extends Model
     }
 
     public function grupos()
-{
-    return $this->hasMany(GrupoTarea::class, 'proyecto_id')
-                ->orderBy('orden');
-}
+    {
+        return $this->hasMany(GrupoTarea::class, 'proyecto_id')
+                    ->orderBy('orden');
+    }
 
+    public function usuarios()
+    {
+        // Si usas una tabla pivote miembro_proyecto o similar
+        return $this->belongsToMany(User::class, 'proyecto_user'); 
 
+    }
 }

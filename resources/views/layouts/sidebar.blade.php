@@ -5,6 +5,9 @@
     <meta name="description" content="Responsive Admin Dashboard Template">
     <meta name="keywords" content="admin,dashboard">
     <meta name="author" content="stacks">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Poppins:400,500,700,800&display=swap" rel="stylesheet">
     <link href="{{ asset('assets/plugins/font-awesome/css/all.min.css') }}" rel="stylesheet">
@@ -372,7 +375,6 @@
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
 <!-- Javascripts -->
-<script src="{{ asset('assets/plugins/jquery/jquery-3.4.1.min.js') }}"></script>
 <script src="https://unpkg.com/@popperjs/core@2"></script>
 {{--     <script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script> --}}
 <script src="https://unpkg.com/feather-icons"></script>

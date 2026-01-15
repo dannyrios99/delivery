@@ -20,6 +20,11 @@ class Tarea extends Model
         'fecha_limite',
     ];
 
+    public function responsables()
+    {
+        // Esto conecta con la tabla 'tarea_user' que creamos por SQL
+        return $this->belongsToMany(User::class, 'tarea_user', 'tarea_id', 'user_id');
+    }
 
     public function proyecto()
     {
@@ -31,9 +36,15 @@ class Tarea extends Model
         return $this->belongsTo(GrupoTarea::class, 'grupo_id');
     }
     public function checklist()
-{
-    return $this->hasMany(TareaChecklist::class, 'tarea_id');
-}
+    {
+        return $this->hasMany(TareaChecklist::class, 'tarea_id');
+    }
+
+    public function comentarios()
+    {
+        // Relación de uno a muchos, ordenados por los más recientes
+        return $this->hasMany(ComentarioTarea::class, 'tarea_id')->latest();
+    }
 
 }
 

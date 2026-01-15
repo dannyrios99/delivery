@@ -14,10 +14,10 @@ use App\Http\Controllers\VentasController;
 use App\Http\Controllers\VentasInoutController;
 use App\Http\Controllers\DidiOrderController;
 use App\Http\Controllers\VentasRappiController;
-use App\Http\Controllers\RappiPagoController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\GrupoTareaController;
+use App\Models\Tarea;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -98,22 +98,25 @@ Route::middleware('auth')->group(function () {
     Route::get('/rappi-plantilla', [VentasRappiController::class, 'descargarPlantilla'])->name('rappi.plantilla');
 
     Route::resource('proyectos', ProyectoController::class)
-    ->only(['store', 'show']);
-    Route::resource('tareas', TareaController::class)
-    ->only(['store', 'update', 'destroy']);
-    Route::get('tareas/{tarea}/checklist', function (\App\Models\Tarea $tarea) {
-    return $tarea->checklist()
-        ->orderBy('orden')
-        ->get();
-});
+        ->only(['store', 'show']);
+        Route::resource('tareas', TareaController::class)
+        ->only(['store', 'update', 'destroy']);
+        Route::get('tareas/{tarea}/checklist', function (Tarea $tarea) {
+        return $tarea->checklist()
+            ->orderBy('orden')
+            ->get();
+    });
 
+    // Comentarios
+    Route::post('/comentarios-tareas', [TareaController::class, 'storeComentario'])->name('comentarios.store');
+    Route::delete('/comentarios-tareas/{comentario}', [TareaController::class, 'destroyComentario'])->name('comentarios.destroy');
 
     Route::patch(
         'tareas/{tarea}/estado',
         [TareaController::class, 'cambiarEstado']
     )->name('tareas.estado');
 
-Route::resource('grupos-tareas', GrupoTareaController::class)
+    Route::resource('grupos-tareas', GrupoTareaController::class)
     ->only(['store', 'update', 'destroy']);
 
 
@@ -121,10 +124,8 @@ Route::resource('grupos-tareas', GrupoTareaController::class)
     ->only(['store', 'show']);
     Route::resource('tareas', TareaController::class);
 
-Route::patch('/tareas/{tarea}/mover', [TareaController::class, 'mover'])
+    Route::patch('/tareas/{tarea}/mover', [TareaController::class, 'mover'])
     ->name('tareas.mover');
-
-
 
     Route::get('/benchmark-inout', function () {
         try {
@@ -147,29 +148,7 @@ Route::patch('/tareas/{tarea}/mover', [TareaController::class, 'mover'])
 
 
 });
-    Route::get('/test-inout', function () {
-        try {
-            $result = DB::connection('inout')->select('SELECT NOW() as fecha');
-            return 'Conexión exitosa → ' . $result[0]->fecha;
-        } catch (\Exception $e) {
-            return 'Error: ' . $e->getMessage();
-        }
-    });
-    Route::get('/test-inout-orders', function () {
-        try {
-            $estadosFinales = ['Entregado', 'Reparto', 'Cerrado con novedad'];
-
-            $orden = DB::connection('inout')
-                ->table('orders_hotamericas')
-                ->whereIn('stateCurrent', $estadosFinales)
-                ->orderBy('createdAt', 'DESC')
-                ->first();
-
-            return $orden ?: 'No hay órdenes en estados finalizados.';
-        } catch (\Exception $e) {
-            return 'Error: ' . $e->getMessage();
-        }
-    });
+    
 
 Route::get('/clear-laravel-cache', function () {
     Artisan::call('config:clear');
