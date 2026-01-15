@@ -75,9 +75,6 @@
 
     <div class="page-container">
 
-        @section('sucursales')
-            class="active-page"
-        @endsection
 
         @include('layouts.sidebar')
 

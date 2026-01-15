@@ -144,10 +144,9 @@
             PROYECTOS
         </li>
 
-        {{-- LISTA DE PROYECTOS --}}
         @if ($sidebarProyectos->count())
             @foreach ($sidebarProyectos as $proyecto)
-                <li>
+                <li class="{{ $proyectoActualId === $proyecto->id ? 'active-page' : '' }}">
                     <a href="{{ route('proyectos.show', $proyecto->id) }}">
                         <i data-lucide="folder"></i>
                         {{ $proyecto->nombre }}
@@ -160,13 +159,13 @@
             </li>
         @endif
 
-        {{-- BOTÓN SIEMPRE VISIBLE --}}
         <li class="mt-2">
             <a href="#" data-bs-toggle="modal" data-bs-target="#modalProyecto">
                 <i data-lucide="plus"></i>
                 Crear proyecto
             </a>
         </li>
+
 
     </ul>
 </div>
@@ -183,13 +182,8 @@
                 </div>
 
                 <div class="modal-body">
-                    <input
-                        type="text"
-                        name="nombre"
-                        class="form-control form-control-lg"
-                        placeholder="Nombre del proyecto"
-                        required
-                    >
+                    <input type="text" name="nombre" class="form-control form-control-lg"
+                        placeholder="Nombre del proyecto" required>
                 </div>
 
                 <div class="modal-footer">
