@@ -20,6 +20,12 @@ class Tarea extends Model
         'fecha_limite',
     ];
 
+    protected $casts = [
+        'fecha_limite' => 'date:Y-m-d',
+    ];
+
+
+
     public function responsables()
     {
         // Esto conecta con la tabla 'tarea_user' que creamos por SQL

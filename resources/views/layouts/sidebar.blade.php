@@ -17,7 +17,7 @@
     <!-- Theme Styles -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="{{ asset('assets/css/main.min.css') }}" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <script>
     // Calcula altura real del header + su margen inferior y el padding-top del contenido
@@ -199,7 +199,89 @@
     </div>
 </div>
 
+@if($showGoogleCalendarModal)
+<div class="modal fade" id="googleCalendarModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content google-style-modal">
+
+            <div class="modal-header border-0">
+                <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"
+                     alt="Google"
+                     class="google-logo">
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body text-center px-4 pb-4">
+                <h5 class="fw-normal mb-2">
+                    Conecta tu cuenta de Google
+                </h5>
+
+                <p class="text-muted small mb-4">
+                    Para sincronizar tus tareas automáticamente con Google Calendar,
+                    necesitamos acceso a tu calendario.
+                </p>
+
+                <a href="{{ route('google.calendar.connect') }}"
+                   class="google-btn">
+                    <img src="https://developers.google.com/identity/images/g-logo.png"
+                         alt="Google"
+                         class="google-icon">
+                    Continuar con Google
+                </a>
+
+                <p class="text-muted small mt-3 mb-0">
+                    Usaremos Google solo para sincronizar tus tareas.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+@endif
+
+
 <style>
+    .google-style-modal {
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        font-family: 'Roboto', Arial, sans-serif;
+    }
+
+    .google-logo {
+        height: 24px;
+    }
+
+    .google-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+
+        width: 100%;
+        padding: 10px 16px;
+
+        border: 1px solid #dadce0;
+        border-radius: 6px;
+
+        background-color: #fff;
+        color: #3c4043;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+
+        transition: background-color 0.2s ease;
+    }
+
+    .google-btn:hover {
+        background-color: #f7f8f8;
+        color: #3c4043;
+    }
+
+    .google-icon {
+        width: 18px;
+        height: 18px;
+    }
+
     .dropdown-menu .dropdown-item {
         display: flex;
         align-items: center;
@@ -271,6 +353,23 @@
         }
     }
 </style>
+
+@if($showGoogleCalendarModal)
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const el = document.getElementById('googleCalendarModal');
+        if (!el) return;
+
+        const modal = new bootstrap.Modal(el, {
+            backdrop: 'static', // no cerrar al hacer click fuera
+            keyboard: false     // no cerrar con ESC
+        });
+
+        modal.show();
+    });
+</script>
+@endif
+
 
 <script>
     var time;

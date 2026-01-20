@@ -23,6 +23,9 @@ class User extends Authenticatable
         'email',
         'role',
         'password',
+        'google_access_token',
+        'google_refresh_token',
+        'google_token_expires_at',
     ];
 
     /**
@@ -34,6 +37,11 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function hasGoogleCalendarConnected(): bool
+    {
+        return !empty($this->google_refresh_token);
+    }
 
     /**
      * Get the attributes that should be cast.

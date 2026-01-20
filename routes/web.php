@@ -18,6 +18,7 @@ use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\GrupoTareaController;
 use App\Models\Tarea;
+use App\Http\Controllers\GoogleCalendarController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -107,9 +108,18 @@ Route::middleware('auth')->group(function () {
             ->get();
     });
 
-    // Comentarios
+    // Tareas
+    Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
     Route::post('/comentarios-tareas', [TareaController::class, 'storeComentario'])->name('comentarios.store');
     Route::delete('/comentarios-tareas/{comentario}', [TareaController::class, 'destroyComentario'])->name('comentarios.destroy');
+
+    Route::get('/google/connect', [GoogleCalendarController::class, 'redirect'])
+        ->middleware('auth')
+        ->name('google.calendar.connect');
+
+    Route::get('/google/callback', [GoogleCalendarController::class, 'callback'])
+        ->name('google.calendar.callback');
+
 
     Route::patch(
         'tareas/{tarea}/estado',
@@ -118,7 +128,6 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('grupos-tareas', GrupoTareaController::class)
     ->only(['store', 'update', 'destroy']);
-
 
     Route::resource('proyectos', ProyectoController::class)
     ->only(['store', 'show']);

@@ -10,6 +10,10 @@ use Illuminate\Http\Request;
 use App\Models\TareaChecklist;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Events\TareaAsignada;
+use App\Jobs\SyncTaskWithGoogleCalendar;
+use App\Jobs\DeleteGoogleCalendarEvent;
+use App\Jobs\UpdateGoogleCalendarEvent;
 
 class TareaController extends Controller
 {
@@ -38,11 +42,9 @@ class TareaController extends Controller
                 'prioridad' => 'nullable|in:baja,media,alta',
                 'fecha_limite' => 'nullable|date',
 
-                // Responsables (NUEVO)
                 'responsables' => 'nullable|array',
                 'responsables.*' => 'exists:users,id',
 
-                // Checklist
                 'checklist' => 'nullable|array',
                 'checklist.*.texto' => 'required|string|max:255',
                 'checklist.*.completado' => 'nullable|boolean',
@@ -52,35 +54,49 @@ class TareaController extends Controller
 
             // 1️⃣ Crear la tarea
             $tarea = Tarea::create([
-                'titulo' => $request->titulo,
-                'descripcion' => $request->descripcion,
-                'prioridad' => $request->prioridad,
-                'fecha_limite' => $request->fecha_limite,
-                'proyecto_id' => $request->proyecto_id,
-                'grupo_id' => $request->grupo_id,
+                'titulo'        => $request->titulo,
+                'descripcion'   => $request->descripcion,
+                'prioridad'     => $request->prioridad,
+                'fecha_limite'  => $request->fecha_limite,
+                'proyecto_id'   => $request->proyecto_id,
+                'grupo_id'      => $request->grupo_id,
             ]);
 
-            // 2️⃣ Guardar Responsables (NUEVO)
-            if ($request->has('responsables')) {
-                // sync() inserta los IDs en la tabla pivote tarea_user automáticamente
+            // 2️⃣ Guardar responsables
+            if ($request->filled('responsables')) {
                 $tarea->responsables()->sync($request->responsables);
             }
 
-            // 3️⃣ Guardar checklist (si existe)
+            // 3️⃣ Guardar checklist
             if ($request->has('checklist')) {
                 foreach ($request->checklist as $index => $item) {
-                    if (empty($item['texto'])) continue; // Evitamos basura en la BD
+                    if (empty($item['texto'])) continue;
 
                     TareaChecklist::create([
-                        'tarea_id' => $tarea->id,
-                        'texto' => $item['texto'],
-                        'completado' => ($item['completado'] == "1") ? 1 : 0, // <--- CAMBIO AQUÍ
-                        'orden' => $index,
+                        'tarea_id'   => $tarea->id,
+                        'texto'      => $item['texto'],
+                        'completado' => ($item['completado'] ?? 0) == "1" ? 1 : 0,
+                        'orden'      => $index,
                     ]);
                 }
             }
 
             DB::commit();
+
+            // 🔄 CARGAR responsables (CLAVE)
+            $tarea->load('responsables');
+
+            // 🔔 Evento emails
+            if ($tarea->responsables->isNotEmpty()) {
+                event(new TareaAsignada($tarea, $tarea->responsables));
+            }
+
+            // 📅 Google Calendar
+            foreach ($tarea->responsables as $user) {
+                if ($user && $user->google_refresh_token) {
+                    SyncTaskWithGoogleCalendar::dispatch($tarea->id, $user->id);
+                }
+            }
 
             return redirect()->back()
                 ->with('success', 'Tarea creada correctamente');
@@ -89,7 +105,7 @@ class TareaController extends Controller
             DB::rollBack();
 
             Log::error('Error al crear tarea', [
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
                 'request' => $request->all(),
             ]);
 
@@ -116,23 +132,95 @@ class TareaController extends Controller
     public function update(Request $request, Tarea $tarea)
     {
         try {
+            Log::info('UPDATE INICIO', [
+                'tarea_id' => $tarea->id,
+                'request_responsables' => $request->input('responsables'),
+            ]);
+
             DB::beginTransaction();
 
-            // 1. Actualizar datos básicos
+            // 🔹 0. Responsables ANTES del cambio
+            $oldResponsables = $tarea->responsables->pluck('id')->toArray();
+
+            Log::info('RESPONSABLES ANTES', [
+                'old_responsables' => $oldResponsables,
+            ]);
+
+            // 1️⃣ Actualizar datos básicos
             $tarea->update([
                 'titulo' => $request->titulo,
                 'descripcion' => $request->descripcion,
                 'prioridad' => $request->prioridad,
-                'fecha_limite' => $request->fecha_limite,
+                'fecha_limite' => $request->filled('fecha_limite')
+                    ? $request->fecha_limite
+                    : $tarea->fecha_limite,
             ]);
 
-            // 2. ACTUALIZAR RESPONSABLES (Añade esta parte)
-            // sync() se encarga de borrar los que quitaste y agregar los nuevos en 'tarea_user'
-            $responsables = $request->input('responsables', []); // Si viene vacío, limpia la tabla
-            $tarea->responsables()->sync($responsables);
+            Log::info('TAREA ACTUALIZADA', [
+                'titulo' => $tarea->titulo,
+                'fecha_limite' => $tarea->fecha_limite,
+            ]);
 
-            // 3. Procesar checklist (Tu código original)
+            // 2️⃣ Actualizar responsables
+            $newResponsables = $request->input('responsables', []);
+            $tarea->responsables()->sync($newResponsables);
+
+            Log::info('RESPONSABLES DESPUÉS SYNC', [
+                'new_responsables_request' => $newResponsables,
+                'responsables_en_bd' => $tarea->responsables()->pluck('users.id')->toArray(),
+            ]);
+
+            // 🔹 3. Detectar cambios
+            $removedUsers = array_diff($oldResponsables, $newResponsables);
+            $addedUsers   = array_diff($newResponsables, $oldResponsables);
+
+            Log::info('CAMBIOS RESPONSABLES', [
+                'removed' => $removedUsers,
+                'added' => $addedUsers,
+            ]);
+
+            // 4️⃣ BORRAR eventos (responsables quitados)
+            foreach ($removedUsers as $userId) {
+                Log::info('DISPATCH DELETE EVENT', [
+                    'tarea_id' => $tarea->id,
+                    'user_id' => $userId,
+                ]);
+
+                DeleteGoogleCalendarEvent::dispatch($tarea->id, $userId);
+            }
+
+            // 5️⃣ CREAR eventos (responsables nuevos)
+            foreach ($addedUsers as $userId) {
+                Log::info('DISPATCH CREATE EVENT', [
+                    'tarea_id' => $tarea->id,
+                    'user_id' => $userId,
+                ]);
+
+                SyncTaskWithGoogleCalendar::dispatch($tarea->id, $userId);
+            }
+
+            // 🔄 ACTUALIZAR eventos para TODOS los responsables actuales
+            $actualResponsables = $tarea->responsables()->pluck('users.id')->toArray();
+
+            Log::info('RESPONSABLES PARA UPDATE GOOGLE', [
+                'actual_responsables' => $actualResponsables,
+            ]);
+
+            foreach ($actualResponsables as $userId) {
+                Log::info('DISPATCH UPDATE EVENT', [
+                    'tarea_id' => $tarea->id,
+                    'user_id' => $userId,
+                ]);
+
+                UpdateGoogleCalendarEvent::dispatch($tarea->id, $userId);
+            }
+
+            // 7️⃣ Checklist (tu código original)
             if ($request->has('checklist')) {
+                Log::info('CHECKLIST RECIBIDO', [
+                    'checklist' => $request->checklist,
+                ]);
+
                 $idsRecibidos = collect($request->checklist)
                     ->pluck('id')
                     ->filter()
@@ -143,22 +231,19 @@ class TareaController extends Controller
                     ->delete();
 
                 foreach ($request->checklist as $orden => $item) {
-                    // REGLA DE ORO: Si no hay texto, ignoramos el ítem para que no de error
                     if (empty($item['texto'])) continue;
 
                     if (!empty($item['id'])) {
-                        // ACTUALIZAR
                         TareaChecklist::where('id', $item['id'])->update([
                             'texto' => $item['texto'],
-                            'completado' => ($item['completado'] == "1") ? 1 : 0, // <--- CAMBIO AQUÍ
+                            'completado' => ($item['completado'] == "1") ? 1 : 0,
                             'orden' => $orden,
                         ]);
                     } else {
-                        // CREAR NUEVO
                         TareaChecklist::create([
                             'tarea_id' => $tarea->id,
                             'texto' => $item['texto'],
-                            'completado' => ($item['completado'] == "1") ? 1 : 0, // <--- CAMBIO AQUÍ
+                            'completado' => ($item['completado'] == "1") ? 1 : 0,
                             'orden' => $orden,
                         ]);
                     }
@@ -167,12 +252,22 @@ class TareaController extends Controller
 
             DB::commit();
 
+            Log::info('UPDATE FINALIZADO OK', [
+                'tarea_id' => $tarea->id,
+            ]);
+
             return redirect()->back()
                 ->with('success', 'Tarea actualizada correctamente');
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            // Log::error($e->getMessage()); // Útil para debugear si algo falla
+
+            Log::error('ERROR UPDATE TAREA', [
+                'tarea_id' => $tarea->id ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return redirect()->back()
                 ->with('error', 'No se pudo actualizar la tarea');
         }
@@ -215,6 +310,15 @@ class TareaController extends Controller
     public function destroy(Tarea $tarea)
     {
         try {
+            // 1️⃣ Obtener responsables ANTES de borrar
+            $responsables = $tarea->responsables()->pluck('users.id');
+
+            // 2️⃣ Disparar Job para borrar eventos de Google
+            foreach ($responsables as $userId) {
+                DeleteGoogleCalendarEvent::dispatch($tarea->id, $userId);
+            }
+
+            // 3️⃣ Ahora sí, borrar la tarea
             $tarea->delete();
 
             return redirect()->back()

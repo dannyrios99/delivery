@@ -6,7 +6,9 @@
     <link rel="icon" href="{{ asset('assets/images/LogoIco.png') }}" type="image/x-icon">
     <link href="{{ asset('assets/plugins/DataTables/datatables.min.css') }}" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -49,9 +51,8 @@
                                                 <h5 class="card-title">Usuarios</h5>
                                                 <p class="card-text">Gestión de usuarios registrados.</p>
                                                 <a href="{{ route('usuarios.index') }}" class="btn btn-sm btn-primary"
-                                                    style="    background-color: #4a90e2;
-                                                                                                                            border-color: #4a90e2;
-                                                                                                                            color: #fff;">Ver más</a>
+                                                    style="background-color: #4a90e2; border-color: #4a90e2;
+                                                            color: #fff;">Ver más</a>
                                             </div>
                                         </div>
                                     </div>
@@ -66,8 +67,8 @@
                                                 <p class="card-text">Opciones generales del sistema.</p>
                                                 <a href="#"
                                                     class="btn btn-sm btn-warning text-white" style="background-color: #e06d2a;
-                                                                                                border-color: #e06d2a;
-                                                                                                color: #fff;">Configurar</a>
+                                                            border-color: #e06d2a;
+                                                            color: #fff;">Configurar</a>
                                             </div>
                                         </div>
                                     </div>
@@ -107,6 +108,7 @@
         });
     </script>
 
+
     <script>
         function togglePassword(fieldId, button) {
             const input = document.getElementById(fieldId);
@@ -143,33 +145,29 @@
         }
     </script>
 
-    @if (Session::has('error'))
-        <script>
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'error',
-                title: "{{ session('error') }}",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-            });
-        </script>
+    @if(session('success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: '¡Listo!',
+            text: '{{ session('success') }}',
+            confirmButtonText: 'OK'
+        });
+    </script>
     @endif
 
-    @if (Session::has('success'))
-        <script>
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: "{{ session('success') }}",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-            });
-        </script>
+    @if(session('error'))
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '{{ session('error') }}',
+            confirmButtonText: 'OK'
+        });
+    </script>
     @endif
+
+
 
 </body>
 

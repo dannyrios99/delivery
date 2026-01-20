@@ -11,6 +11,11 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return view('dashboard.dashboard');
+        $user = auth()->user();
+
+        $showGoogleCalendarModal = $user && !$user->hasGoogleCalendarConnected();
+
+        return view('dashboard.dashboard', compact('showGoogleCalendarModal'));
     }
+
 }

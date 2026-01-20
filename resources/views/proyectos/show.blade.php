@@ -71,16 +71,13 @@
             background-color: #e06d2a !important;
             box-shadow: 0 7px 23px -8px #e06d2a !important;
         }
-
         body { background-color: #f0f2f5; }
-
         .kanban-wrapper {
             display: flex;
             gap: 1.5rem;
             padding: 20px;
             align-items: flex-start;
         }
-
         /* Estilo de la Columna (Lista) */
         .kanban-column {
             width: 320px;
@@ -101,18 +98,16 @@
 
         /* Estilo de la Tarjeta (Card) */
         .task-card {
-            background: #ffffff;
-            border-radius: 16px; /* Bordes más redondeados como la imagen */
-            padding: 20px;
-            margin-bottom: 15px;
-            border: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Sombra muy sutil */
-            transition: transform 0.2s ease;
+            position: relative;
+            transition:
+                top 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
+
         .task-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            top: -2px;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.14);
         }
 
         /* Tags/Etiquetas */
@@ -191,7 +186,7 @@
         /* Ajuste para que el kanban-wrapper no tenga el botón flotando al final */
         .kanban-wrapper {
             display: flex;
-            overflow-x: auto;
+            
             gap: 2rem;
             padding: 10px;
             align-items: flex-start;
@@ -217,10 +212,83 @@
         .avatar-group .avatar-circle:first-child {
             margin-left: 0 !important;
         }
-        .task-card:hover {
-            transform: translateY(-3px);
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+      
+        .task-card .dropdown,
+        .task-card .dropdown * {
+            pointer-events: auto;
+        }
+
+        .card {
+            overflow: visible !important;
+        }
+
+        .modal-content {
+            animation: modalFadeUp 0.25s ease;
+        }
+
+        @keyframes modalFadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal input:focus {
+            box-shadow: none;
+        }
+
+        /* Entrada más suave del offcanvas */
+        .offcanvas {
+            transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Quitar sensación pesada del backdrop */
+        .offcanvas-backdrop {
+            background-color: rgba(0,0,0,0.35);
+        }
+
+        .nueva-columna {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+
+        .nueva-columna.mostrar {
+            opacity: 1;
+            transform: translateX(0);
+            transition:
+                opacity 0.4s ease,
+                transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .offcanvas-grupo {
+            width: 420px;
+            border-radius: 28px 0 0 28px;
+        }
+
+        .input-grupo {
+            width: 100%;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 14px 18px;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-grupo:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
+        }
+
+
+        /* Botón cancelar sin ruido */
+        .btn-link {
+            text-decoration: none;
         }
     </style>
 </head>
@@ -256,7 +324,10 @@
                                         </div>
 
                                         {{-- Botón Estilo Opción 2 --}}
-                                        <button class="btn-add-circle" data-bs-toggle="modal" data-bs-target="#modalGrupo" title="Añadir otra lista">
+                                        <button class="btn-add-circle"
+                                                data-bs-toggle="offcanvas"
+                                                data-bs-target="#offcanvasGrupo"
+                                                title="Añadir otra lista">
                                             <i class="fas fa-plus"></i>
                                         </button>
                                     </div>
@@ -269,9 +340,24 @@
                                         @foreach ($proyecto->grupos as $grupo)
                                             <div class="kanban-column">
                                                 {{-- Título de la columna --}}
-                                                <div class="column-title px-2">
+                                                <div class="column-title px-2 d-flex justify-content-between align-items-center">
                                                     <span>{{ $grupo->nombre }}</span>
-                                                    <i class="fas fa-ellipsis-h text-muted" style="cursor: pointer;"></i>
+
+                                                    <div class="dropdown">
+                                                        <i class="fas fa-ellipsis-h text-muted small"
+                                                        data-bs-toggle="dropdown"
+                                                        style="cursor:pointer; padding:4px;"></i>
+
+                                                        <ul class="dropdown-menu dropdown-menu-end shadow rounded-4 border-0 py-2">
+                                                            <li>
+                                                                <button class="dropdown-item text-danger small d-flex align-items-center"
+                                                                        onclick="confirmarEliminarGrupo({{ $grupo->id }}, this)">
+                                                                    <i class="fas fa-trash-alt me-2"></i>
+                                                                    Eliminar grupo
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </div>
 
                                                 {{-- Contenedor de Cards --}}
@@ -280,7 +366,14 @@
                                                         <div class="task-card p-3 mb-3 border-0 shadow-sm bg-white rounded-4" 
                                                             role="button"
                                                             style="cursor: pointer;"
-                                                            onclick="if(!event.target.closest('.dropdown')) { abrirTarea({{ $tarea->load(['responsables', 'checklist'])->toJson() }}); (new bootstrap.Offcanvas(document.getElementById('panelTarea'))).show(); }">
+                                                            onclick="
+                                                            if (
+                                                                !event.target.closest('.dropdown') &&
+                                                                !event.target.closest('.dropdown-menu')
+                                                            ) {
+                                                                abrirTarea({{ $tarea->load(['responsables', 'checklist'])->toJson() }});
+                                                                (new bootstrap.Offcanvas(document.getElementById('panelTarea'))).show();
+                                                            }">
 
                                                             {{-- Header: Prioridad y Menú Mover --}}
                                                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -288,9 +381,23 @@
                                                                     {{ $tarea->prioridad ?? 'Normal' }}
                                                                 </span>
                                                                 
-                                                                <div class="dropdown">
-                                                                    <i class="fas fa-ellipsis-h text-muted small" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer; padding: 5px;"></i>
-                                                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
+                                                                <div class="dropdown position-relative">
+                                                                   <i class="fas fa-ellipsis-h text-muted small"
+                                                                        data-bs-toggle="dropdown"
+                                                                        style="cursor: pointer; padding: 5px; position: relative; z-index: 1;">
+                                                                    </i>
+                                                                        
+                                                                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 py-2"
+                                                                        style="z-index: 1055;">
+
+                                                                        <li class="dropdown-header pb-1 small fw-bold text-uppercase text-danger">Acciones</li>
+                                                                        <li>
+                                                                            <button type="button" class="dropdown-item small text-danger d-flex align-items-center" 
+                                                                                    onclick="confirmarEliminarTarea({{ $tarea->id }})">
+                                                                                <i class="fas fa-trash-alt me-2"></i> Eliminar Tarea
+                                                                            </button>
+                                                                        </li>
+                                                                        <li class="dropdown-divider"></li>
                                                                         <li class="dropdown-header pb-1 small fw-bold text-uppercase">Mover a:</li>
                                                                         @foreach ($proyecto->grupos as $g)
                                                                             @if($g->id !== $grupo->id)
@@ -389,7 +496,7 @@
 
                     <input type="text" name="titulo" id="panel_titulo" 
                         class="form-control form-control-lg border-0 bg-transparent fw-bold p-0 mb-3" 
-                        style="font-size: 1.8rem;" placeholder="Nombre de la tarea...">
+                        style="font-size: 1.8rem;" placeholder="INGRESE NOMBRE DE LA TAREA">
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
@@ -462,33 +569,57 @@
             </div>
         </div>
 
-        <div class="modal fade" id="modalGrupo" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <form method="POST" action="{{ route('grupos-tareas.store') }}" style="width: 100%">
-                    @csrf
+        <div class="offcanvas offcanvas-end offcanvas-grupo"
+            tabindex="-1"
+            id="offcanvasGrupo">
 
-                    <input type="hidden" name="proyecto_id" value="{{ $proyecto->id }}">
+            <div class="offcanvas-body">
 
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Nuevo grupo</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
+                <!-- Cerrar -->
+                <div class="d-flex justify-content-end mb-3">
+                    <button type="button"
+                            class="btn-close opacity-50"
+                            data-bs-dismiss="offcanvas"></button>
+                </div>
 
-                        <div class="modal-body">
-                            <input type="text" name="nombre" class="form-control form-control-lg"
-                                placeholder="Nombre del grupo" required autofocus>
-                        </div>
+                <!-- Contenido -->
+                <div class="pt-3">
 
-                        <div class="modal-footer">
-                            <button class="btn btn-primary">
-                                Crear grupo
+                    <h4 class="fw-bold mb-1">Nuevo grupo</h4>
+                    <p class="text-muted small mb-4">
+                        Crea una nueva columna para organizar tus tareas
+                    </p>
+
+                    <form id="formGrupo">
+                        @csrf
+                        <input type="hidden" name="proyecto_id" value="{{ $proyecto->id }}">
+
+                        <input type="text"
+                            name="nombre"
+                            id="nombreGrupo"
+                            class="input-grupo mb-4"
+                            placeholder="Nombre del grupo"
+                            required
+                            autofocus>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button"
+                                    class="btn btn-link text-muted px-2"
+                                    data-bs-dismiss="offcanvas">
+                                Cancelar
+                            </button>
+
+                            <button type="submit"
+                                    class="btn btn-primary rounded-pill px-4">
+                                Crear
                             </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+
+                </div>
             </div>
         </div>
+
 
         @foreach ($proyecto->grupos as $grupo)
             <div class="modal fade" id="modalEliminarGrupo{{ $grupo->id }}" tabindex="-1">
@@ -586,6 +717,162 @@
                     dropdownParent: $('#formTareaPrincipal').parent() 
                 });
             });
+            
+            document.addEventListener('show.bs.dropdown', function (event) {
+                // Cierra todos los dropdowns abiertos
+                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                    if (!menu.contains(event.target)) {
+                        const dropdown = bootstrap.Dropdown.getInstance(menu.previousElementSibling);
+                        if (dropdown) dropdown.hide();
+                    }
+                });
+            });
+        </script>
+
+        <script>
+        //Crear grupo + Cerrar offcanvas
+        document.getElementById('formGrupo').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const nombre = document.getElementById('nombreGrupo').value.trim();
+            if (!nombre) return;
+
+            const response = await fetch("{{ route('grupos-tareas.store') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    proyecto_id: {{ $proyecto->id }},
+                    nombre: nombre
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                cerrarOffcanvasGrupo();
+                insertarColumna(data.grupo);
+                form.reset();
+            }
+        });
+
+        function cerrarOffcanvasGrupo() {
+            const offcanvasEl = document.getElementById('offcanvasGrupo');
+            const instance = bootstrap.Offcanvas.getInstance(offcanvasEl);
+            if (instance) instance.hide();
+        }
+
+        function insertarColumna(grupo) {
+            const wrapper = document.querySelector('.kanban-wrapper');
+
+            const col = document.createElement('div');
+            col.className = 'kanban-column nueva-columna';
+            col.innerHTML = `
+                <div class="column-title px-2 d-flex justify-content-between align-items-center">
+                    <span>${grupo.nombre}</span>
+
+                    <div class="dropdown">
+                        <i class="fas fa-ellipsis-h text-muted small"
+                        data-bs-toggle="dropdown"
+                        style="cursor:pointer; padding:4px;"></i>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow rounded-4 border-0 py-2">
+                            <li>
+                                <button class="dropdown-item text-danger small d-flex align-items-center"
+                                        onclick="confirmarEliminarGrupo(${grupo.id}, this)">
+                                    <i class="fas fa-trash-alt me-2"></i>
+                                    Eliminar grupo
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="column-body">
+                    <button class="btn w-100 text-muted small fw-bold mt-2 border-0">
+                        + Añadir tarea
+                    </button>
+                </div>
+            `;
+
+            wrapper.appendChild(col);
+
+            // animación
+            requestAnimationFrame(() => col.classList.add('mostrar'));
+
+            // 🔥 INICIALIZAR DROPDOWN
+            inicializarDropdowns(col);
+
+            // scroll
+            wrapper.scrollTo({
+                left: wrapper.scrollWidth,
+                behavior: 'smooth'
+            });
+        }
+
+        document.getElementById('offcanvasGrupo')
+        .addEventListener('shown.bs.offcanvas', () => {
+            document.getElementById('nombreGrupo').focus();
+        });
+
+        function inicializarDropdowns(container = document) {
+            container.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(el => {
+                // Evita duplicar instancias
+                if (!bootstrap.Dropdown.getInstance(el)) {
+                    new bootstrap.Dropdown(el);
+                }
+            });
+        }
+        </script>
+
+        <script>
+            //Eliminar grupo
+        function confirmarEliminarGrupo(grupoId, btn) {
+            event.stopPropagation();
+
+            Swal.fire({
+                title: '¿Eliminar grupo?',
+                text: 'Se eliminarán todas las tareas de este grupo.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonText: 'Cancelar',
+                confirmButtonText: 'Sí, eliminar'
+            }).then(async (result) => {
+                if (!result.isConfirmed) return;
+
+                try {
+                    const response = await fetch(`/grupos-tareas/${grupoId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        eliminarColumnaConAnimacion(btn);
+                    }
+                } catch (e) {
+                    Swal.fire('Error', 'No se pudo eliminar el grupo', 'error');
+                }
+            });
+        }
+
+        function eliminarColumnaConAnimacion(btn) {
+            const column = btn.closest('.kanban-column');
+
+            column.style.transition = 'all 0.35s ease';
+            column.style.opacity = '0';
+            column.style.transform = 'translateX(30px)';
+
+            setTimeout(() => column.remove(), 350);
+        }
         </script>
 
         <script>
@@ -611,6 +898,34 @@
 
         <script>
             const authUserId = {{ auth()->id() }};
+        </script>
+
+        <script>
+            function confirmarEliminarTarea(id) {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "Esta acción eliminará la tarea, sus comentarios y el checklist permanentemente.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Creamos un formulario dinámico para enviar el DELETE
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/tareas/${id}`;
+                        form.innerHTML = `
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="_method" value="DELETE">
+                        `;
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            }
         </script>
 
         <script>
@@ -860,93 +1175,7 @@
                 });
             }
         </script>
-
         
-
-        <script>
-            let checklistEditIndex = 0;
-
-            document.addEventListener('DOMContentLoaded', function() {
-
-                const modal = document.getElementById('modalEditarTarea');
-
-                modal.addEventListener('show.bs.modal', function(event) {
-                    const button = event.relatedTarget;
-
-                    const tareaId = button.getAttribute('data-id');
-
-                    // Action del form
-                    document.getElementById('formEditarTarea').action = `/tareas/${tareaId}`;
-
-                    // Campos básicos
-                    document.getElementById('editTitulo').value =
-                        button.getAttribute('data-titulo') ?? '';
-
-                    document.getElementById('editDescripcion').value =
-                        button.getAttribute('data-descripcion') ?? '';
-
-                    document.getElementById('editPrioridad').value =
-                        button.getAttribute('data-prioridad') ?? 'media';
-
-                    document.getElementById('editFecha').value =
-                        button.getAttribute('data-fecha') ?? '';
-
-                    // Limpiar checklist
-                    const container = document.getElementById('editChecklistContainer');
-                    container.innerHTML = '';
-                    checklistEditIndex = 0;
-
-                    // 🔥 Cargar checklist por AJAX
-                    fetch(`/tareas/${tareaId}/checklist`)
-                        .then(res => res.json())
-                        .then(data => {
-                            data.forEach(item => {
-                                agregarChecklistEdit(item);
-                            });
-                        });
-                });
-
-            });
-
-            function agregarChecklistEdit(item = null) {
-                const container = document.getElementById('editChecklistContainer');
-
-                const div = document.createElement('div');
-                div.classList.add('d-flex', 'align-items-center', 'mb-2');
-
-                div.innerHTML = `
-        <input type="hidden"
-               name="checklist[${checklistEditIndex}][id]"
-               value="${item?.id ?? ''}">
-
-        <input type="hidden"
-               name="checklist[${checklistEditIndex}][completado]"
-               value="${item?.completado ?? 0}">
-
-        <input type="checkbox"
-               class="form-check-input me-2"
-               ${item?.completado ? 'checked' : ''}
-               onchange="this.previousElementSibling.value = this.checked ? 1 : 0">
-
-        <input type="text"
-               name="checklist[${checklistEditIndex}][texto]"
-               class="form-control form-control-sm me-2"
-               value="${item?.texto ?? ''}"
-               placeholder="Nuevo ítem">
-
-        <button type="button"
-                class="btn btn-sm btn-outline-danger"
-                onclick="this.parentElement.remove()">
-            ✕
-        </button>
-    `;
-
-                container.appendChild(div);
-                checklistEditIndex++;
-            }
-        </script>
-
-
         <!-- NOTIFICACIONES SWEETALERT -->
         @if (Session::has('success'))
             <script>
