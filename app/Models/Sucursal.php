@@ -50,4 +50,10 @@ class Sucursal extends Model
     {
         return $this->hasMany(User::class, 'sucursal_id');
     }
+
+    public function mapaEmbebido()
+{
+    return $this->hasOne(MapaEmbebido::class);
+}
+
 }
