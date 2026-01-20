@@ -18,6 +18,7 @@ use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\GrupoTareaController;
 use App\Models\Tarea;
+use App\Http\Controllers\MapaEmbebidoController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -91,6 +92,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/didi', [DidiOrderController::class, 'index'])->name('ventas.didi');
     Route::post('/didi/import', [DidiOrderController::class, 'import'])->name('didi.import');
     Route::get('/didi/template', [DidiOrderController::class, 'downloadTemplate'])->name('didi.template');
+    Route::get('/didi/dashboard', [DidiOrderController::class, 'dashboard'])->name('didi.dashboard');
+
 
     // Ventas rappi
     Route::get('/rappi', [VentasRappiController::class, 'index'])->name('ventas.rappi');
@@ -145,7 +148,13 @@ Route::middleware('auth')->group(function () {
             return $e->getMessage();
         }
     });
+Route::get('/mapas', [MapaEmbebidoController::class, 'index'])
+    ->name('mapas.index');
 
+Route::get('/mapas/sucursal/{sucursal}', [MapaEmbebidoController::class, 'show'])
+    ->name('mapas.show');
+Route::post('/mapas/asignar', [MapaEmbebidoController::class, 'store'])
+    ->name('mapas.store');
 
 });
     

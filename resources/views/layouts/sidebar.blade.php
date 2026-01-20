@@ -135,8 +135,8 @@
             <a href="{{ route('horarios.index') }}"><i data-lucide="clipboard-clock"></i>Horarios</a>
         </li>
 
-        <li @yield('')>
-            <a href=""><i data-lucide="map"></i>Mapas</a>
+        <li @yield('mapas')>
+            <a href="{{ route('mapas.index') }}"><i data-lucide="map"></i>Mapas</a>
         </li>
 
         <li @yield('')>

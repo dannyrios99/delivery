@@ -34,7 +34,7 @@ class VentasController extends Controller
                     'nombre' => 'Didi',
                     'descripcion' => 'Órdenes y ventas procesadas por Didi.',
                     'year' => 'todos',
-                    'ruta' => route('ventas.didi'),
+                    'ruta' => route('didi.dashboard'),
                 ],
         ];
 
