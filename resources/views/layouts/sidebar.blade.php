@@ -131,10 +131,6 @@
            GESTION HORAS
         </li>
 
-        <li @yield('horas')>
-            <a href="{{ route('horas-extras.index') }}"><i data-lucide="clock-plus"></i>Horas Extras</a>
-        </li>
-
         <li class="sidebar-title">
             DOMICILIOS
         </li>
