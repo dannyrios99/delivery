@@ -118,9 +118,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('tareas/{tarea}/estado',[TareaController::class, 'cambiarEstado'])->name('tareas.estado');
     Route::resource('grupos-tareas', GrupoTareaController::class)->only(['store', 'update', 'destroy']);
     Route::resource('tareas', TareaController::class);
+    Route::patch('/tareas/{tarea}/mover', [TareaController::class, 'mover'])->name('tareas.mover');
+    Route::patch('/tareas/{tarea}/archivar', [TareaController::class, 'archivar'])->name('tareas.archivar');
+    Route::patch('/tareas/{tarea}/restaurar', [TareaController::class, 'restaurar'])->name('tareas.restaurar');
 
-    Route::patch('/tareas/{tarea}/mover', [TareaController::class, 'mover'])
-    ->name('tareas.mover');
 
     Route::get('/benchmark-inout', function () {
         try {

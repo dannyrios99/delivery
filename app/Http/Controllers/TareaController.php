@@ -440,15 +440,24 @@ class TareaController extends Controller
                 'grupo_id' => 'required|exists:grupos_tareas,id'
             ]);
 
+            $grupoDestino = \App\Models\GrupoTarea::find($request->grupo_id);
+            
+            // Detectar si el grupo destino es de finalización
+            $esTerminado = $grupoDestino && in_array(strtolower(trim($grupoDestino->nombre)), ['terminado', 'hecho', 'completado', 'done']);
+
             $tarea->update([
-                'grupo_id' => $request->grupo_id
+                'grupo_id' => $request->grupo_id,
+                // Si pasa a terminado, se archiva; si se devuelve, se desarchiva (opcional, pero de momento aseguremos el archivo)
+                'archivada' => $esTerminado ? true : $tarea->archivada
             ]);
 
-            return redirect()->back()
-                ->with('success', 'Tarea movida correctamente');
+            $mensaje = $esTerminado 
+                ? 'Tarea completada y archivada automáticamente' 
+                : 'Tarea movida correctamente';
+
+            return redirect()->back()->with('success', $mensaje);
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'No se pudo mover la tarea');
+            return redirect()->back()->with('error', 'No se pudo mover la tarea');
         }
     }
 
@@ -471,5 +480,4 @@ class TareaController extends Controller
             return redirect()->back()->with('error', 'No se pudo restaurar la tarea');
         }
     }
-
 }
