@@ -34,7 +34,9 @@ class ProyectoController extends Controller
         $proyecto->load([
             'grupos.tareas' => function ($query) use ($request) {
                 // SI el usuario quiere ver solo sus tareas:
-                $query->where('archivada', false);
+                $query->where('archivada', false)
+                      ->orderBy('updated_at', 'desc');
+                      
                 $query->when($request->ver == 'mis-tareas', function ($q) {
                     $q->whereHas('responsables', function ($r) {
                         $r->where('users.id', auth()->id());

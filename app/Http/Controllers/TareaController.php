@@ -447,13 +447,27 @@ class TareaController extends Controller
 
             $tarea->update([
                 'grupo_id' => $request->grupo_id,
-                // Si pasa a terminado, se archiva; si se devuelve, se desarchiva (opcional, pero de momento aseguremos el archivo)
-                'archivada' => $esTerminado ? true : $tarea->archivada
+                'archivada' => false // Asegurar que la tarea que se acaba de mover quede visible
             ]);
 
-            $mensaje = $esTerminado 
-                ? 'Tarea completada y archivada automáticamente' 
-                : 'Tarea movida correctamente';
+            $mensaje = 'Tarea movida correctamente';
+
+            if ($esTerminado) {
+                // Límite de 8 tareas (FIFO)
+                $activeTasks = \App\Models\Tarea::where('grupo_id', $grupoDestino->id)
+                                ->where('archivada', false)
+                                ->orderBy('updated_at', 'asc') // Las más antiguas primero
+                                ->get();
+                                
+                if ($activeTasks->count() > 8) {
+                    $cantidadAArchivar = $activeTasks->count() - 8;
+                    $tareasViejas = $activeTasks->take($cantidadAArchivar);
+                    
+                    foreach ($tareasViejas as $oldTask) {
+                        $oldTask->update(['archivada' => true]);
+                    }
+                }
+            }
 
             return redirect()->back()->with('success', $mensaje);
         } catch (\Exception $e) {
