@@ -160,3 +160,24 @@ Route::get('/clear-laravel-cache', function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/limpiar-tareas', function () {
+    $gruposTerminados = \App\Models\GrupoTarea::whereIn('nombre', ['Terminado', 'Hecho', 'Completado', 'Done'])->get();
+    $archivadas = 0;
+    
+    foreach($gruposTerminados as $grupo) {
+        $activeTasks = \App\Models\Tarea::where('grupo_id', $grupo->id)
+                                        ->where('archivada', false)
+                                        ->orderBy('updated_at', 'asc') // antíguas primero
+                                        ->get();
+        if ($activeTasks->count() > 8) {
+            $cantidadAArchivar = $activeTasks->count() - 8;
+            $tareasViejas = $activeTasks->take($cantidadAArchivar);
+            foreach ($tareasViejas as $oldTask) {
+                $oldTask->update(['archivada' => true]);
+                $archivadas++;
+            }
+        }
+    }
+    return "Listo. Se archivaron {$archivadas} tareas antiguas para respetar el límite de 8.";
+});
