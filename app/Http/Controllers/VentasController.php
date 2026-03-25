@@ -20,7 +20,7 @@ class VentasController extends Controller
                 'nombre' => 'InOut Delivery',
                 'descripcion' => 'Órdenes y ventas procesadas por InOut.',
                 'year' => $year,
-                'ruta' => route('ventas.inout'),
+                'ruta' => route('ventas.inout.dashboard'),
             ],
                 [
                     'slug' => 'rappi',
