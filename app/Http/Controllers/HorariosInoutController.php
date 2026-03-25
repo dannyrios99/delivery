@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\HorarioInOut;
+use App\Models\HorarioInout;
 use App\Models\Sucursal;
 use Illuminate\Http\Request;
 
@@ -34,7 +34,7 @@ class HorariosInOutController extends Controller
             'cierre' => 'required',
         ]);
 
-        HorarioInOut::create([
+        HorarioInout::create([
             'sucursal_id' => $request->sucursal_id,
             'mapa' => $request->mapa,
             'apertura' => $request->apertura,
@@ -55,13 +55,13 @@ class HorariosInOutController extends Controller
 
     public function edit($id)
     {
-        $horario = HorarioInOut::findOrFail($id);
+        $horario = HorarioInout::findOrFail($id);
         return view('horarios.inout.edit', compact('horario'));
     }
 
     public function update(Request $request, $id)
     {
-        $horario = HorarioInOut::findOrFail($id);
+        $horario = HorarioInout::findOrFail($id);
 
         $horario->update([
             'mapa' => $request->mapa,

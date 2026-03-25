@@ -94,26 +94,26 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  * @property-read \App\Models\Sucursal $sucursal
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereApertura($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereCierre($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereDomingo($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereFestivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereJueves($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereLunes($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereMapa($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereMartes($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereMiercoles($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereSabado($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereSucursalId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInOut whereViernes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereApertura($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereCierre($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereDomingo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereFestivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereJueves($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereLunes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereMapa($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereMartes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereMiercoles($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereSabado($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereSucursalId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|HorarioInout whereViernes($value)
  */
-	class HorarioInOut extends \Eloquent {}
+	class HorarioInout extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -193,7 +193,7 @@ namespace App\Models{
  * @property string|null $ciudad
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\HorarioInOut> $horariosInout
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\HorarioInout> $horariosInout
  * @property-read int|null $horarios_inout_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\HorarioRappi> $horariosRappi
  * @property-read int|null $horarios_rappi_count
