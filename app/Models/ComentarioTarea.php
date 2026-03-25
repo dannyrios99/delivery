@@ -27,6 +27,11 @@ class ComentarioTarea extends Model
         return $this->belongsTo(Tarea::class, 'tarea_id');
     }
 
+    public function archivos()
+    {
+        return $this->morphMany(Archivo::class, 'archivable');
+    }
+
     /**
      * El comentario fue escrito por un usuario (autor).
      */

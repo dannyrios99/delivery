@@ -13,47 +13,70 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         .dropdown-item i {
-            width: 16px;
+            font-size: 0.9rem;
+            color: #94a3b8; /* Iconos más discretos por defecto */
+            transition: color 0.2s ease;
+            width: 20px;
             text-align: center;
-            opacity: 0.8;
         }
 
         /* Base dropdown */
         .dropdown-menu {
-            padding: 6px;
-            border-radius: 10px;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+            padding: 8px;
+            min-width: 180px;
         }
 
         /* Item base */
         .dropdown-item {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #475569;
+            padding: 10px 12px;
             border-radius: 8px;
-            padding: 8px 12px;
-            transition: background-color 0.15s ease, color 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: left;
         }
 
         /* Hover EDITAR */
-        .dropdown-item:not(.text-danger):hover {
-            background-color: #f1f5ff;
-            color: #0d6efd;
-        }
-
-        /* Hover ELIMINAR */
         .dropdown-item.text-danger:hover {
-            background-color: #ffecec;
-            color: #dc3545;
+            background-color: #fff1f2;
+            color: #e11d48 !important;
         }
 
-        /* Iconos */
-        .dropdown-item i {
-            width: 16px;
-            text-align: center;
-            opacity: 0.85;
-            transition: transform 0.15s ease;
+        .dropdown-item.text-danger:hover i {
+            color: #e11d48 !important;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8fafc;
+            color: #e06d2a; /* Color de tu marca */
         }
 
         /* Micro-animación */
         .dropdown-item:hover i {
-            transform: scale(1.05);
+            color: #e06d2a;
+        }
+
+        .dropdown-divider {
+            border-top: 1px solid #f1f5f9;
+            margin: 6px 8px;
+        }
+
+        .dropdown-header {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            padding: 8px 12px 4px;
         }
 
         .btn-outline-primary {
@@ -103,13 +126,10 @@
                 top 0.6s cubic-bezier(0.22, 1, 0.36, 1),
                 box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1);
         }
-
-
         .task-card:hover {
             top: -2px;
             box-shadow: 0 14px 28px rgba(0,0,0,0.14);
         }
-
         /* Tags/Etiquetas */
         .tag {
             font-size: 0.75rem;
@@ -285,10 +305,106 @@
             box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
         }
 
-
         /* Botón cancelar sin ruido */
         .btn-link {
             text-decoration: none;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Borde inferior sutil para marcar el área */
+        #panel_titulo {
+            border-bottom: 2px solid #e0e0e0 !important;
+            border-radius: 0;
+            transition: all 0.3s ease;
+            padding-bottom: 8px !important;
+        }
+
+        /* Cambio de color al escribir para confirmar actividad */
+        #panel_titulo:focus {
+            border-color: transparent;
+            box-shadow: none;
+            outline: none;
+        }
+
+        /* Label pequeña arriba para que siempre sepa qué es */
+        .input-hint {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6c757d;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .form-check-input:checked {
+            background-color: #e06d2a !important;
+            border-color: #e06d2a !important;
+        }
+
+        .form-check-input:focus {
+            border-color: #e06d2a;
+            box-shadow: 0 0 0 0.15rem rgba(224, 109, 42, 0.35);
+        }
+
+        /* Tachado checklist */
+        .checklist-completado {
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: #6e6e6e;
+            opacity: 0.6;
+        }
+
+        /* fuerza altura completa */
+        .input-group {
+            height: 42px;
+        }
+
+        /* clip */
+        .comment-clip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 100%;
+            cursor: pointer;
+            color: #777;
+            background: #f8f9fa;
+            transition: all .2s ease;
+        }
+
+        .comment-clip:hover {
+            background: rgba(224,109,42,.12);
+            color: #e06d2a;
+        }
+
+        /* input */
+        .input-group .form-control {
+            height: 100%;
+            box-shadow: none;
+        }
+
+        /* enviar */
+        .comment-send {
+            border: none;
+            background: #e06d2a;
+            color: #fff;
+            padding: 0 14px;
+            height: 100%;
+            transition: background .2s ease;
+        }
+
+        .comment-send:hover {
+            background: #c85f23;
+        }
+
+        #nuevo_comentario:focus {
+            outline: none;
+            box-shadow: none;
+            border-color: transparent;
         }
     </style>
 </head>
@@ -318,10 +434,16 @@
                                     <div class="d-flex align-items-center gap-3">
                                         {{-- Aquí podrías poner avatares como en la imagen --}}
                                         <div class="d-flex -space-x-2">
-                                            <div class="avatar-circle" style="background-color: #818cf8;"></div>
-                                            <div class="avatar-circle" style="background-color: #6366f1;"></div>
-                                            <div class="avatar-circle" style="background-color: #4f46e5;"></div>
+                                            <div class="avatar-circle" style="background-color: #f59e0b;"></div>
+                                            <div class="avatar-circle" style="background-color: #e06d2a;"></div>
+                                            <div class="avatar-circle" style="background-color: #9a3412;"></div>
                                         </div>
+
+                                        {{-- Botón Historial --}}
+                                        <a href="{{ route('proyectos.historial', $proyecto->id) }}" class="btn-add-circle border-primary"
+                                           title="Historial de Tareas" style="color: #0d6efd; text-decoration: none;">
+                                            <i class="fas fa-history"></i>
+                                        </a>
 
                                         {{-- Botón Estilo Opción 2 --}}
                                         <button class="btn-add-circle"
@@ -367,13 +489,14 @@
                                                             role="button"
                                                             style="cursor: pointer;"
                                                             onclick="
-                                                            if (
-                                                                !event.target.closest('.dropdown') &&
-                                                                !event.target.closest('.dropdown-menu')
-                                                            ) {
-                                                                abrirTarea({{ $tarea->load(['responsables', 'checklist'])->toJson() }});
-                                                                (new bootstrap.Offcanvas(document.getElementById('panelTarea'))).show();
-                                                            }">
+                                                                if (
+                                                                    !event.target.closest('.dropdown') &&
+                                                                    !event.target.closest('.dropdown-menu')
+                                                                ) {
+                                                                    {{-- CAMBIO AQUÍ: Añadimos comentarios.user y comentarios.archivos --}}
+                                                                    abrirTarea({{ $tarea->load(['responsables', 'checklist.archivos', 'comentarios.user', 'comentarios.archivos'])->toJson() }});
+                                                                    (new bootstrap.Offcanvas(document.getElementById('panelTarea'))).show();
+                                                                }">
 
                                                             {{-- Header: Prioridad y Menú Mover --}}
                                                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -381,41 +504,49 @@
                                                                     {{ $tarea->prioridad ?? 'Normal' }}
                                                                 </span>
                                                                 
-                                                                <div class="dropdown position-relative">
-                                                                   <i class="fas fa-ellipsis-h text-muted small"
-                                                                        data-bs-toggle="dropdown"
-                                                                        style="cursor: pointer; padding: 5px; position: relative; z-index: 1;">
-                                                                    </i>
-                                                                        
-                                                                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 py-2"
-                                                                        style="z-index: 1055;">
-
-                                                                        <li class="dropdown-header pb-1 small fw-bold text-uppercase text-danger">Acciones</li>
-                                                                        <li>
-                                                                            <button type="button" class="dropdown-item small text-danger d-flex align-items-center" 
-                                                                                    onclick="confirmarEliminarTarea({{ $tarea->id }})">
-                                                                                <i class="fas fa-trash-alt me-2"></i> Eliminar Tarea
-                                                                            </button>
-                                                                        </li>
-                                                                        <li class="dropdown-divider"></li>
-                                                                        <li class="dropdown-header pb-1 small fw-bold text-uppercase">Mover a:</li>
+                                                                <div class="dropdown">
+                                                                    <button class="btn btn-link text-muted p-1 border-0 shadow-none" 
+                                                                            data-bs-toggle="dropdown" 
+                                                                            aria-expanded="false"
+                                                                            style="line-height: 1;">
+                                                                        <i class="fas fa-ellipsis-h"></i>
+                                                                    </button>
+                                                                    
+                                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                                        <li class="dropdown-header">Mover a...</li>
                                                                         @foreach ($proyecto->grupos as $g)
                                                                             @if($g->id !== $grupo->id)
                                                                                 <li>
-                                                                                    <form action="{{ route('tareas.mover', $tarea->id) }}" method="POST">
+                                                                                    <form action="{{ route('tareas.mover', $tarea->id) }}" method="POST" class="m-0 p-0">
                                                                                         @csrf @method('PATCH')
                                                                                         <input type="hidden" name="grupo_id" value="{{ $g->id }}">
-                                                                                        <button type="submit" class="dropdown-item small d-flex align-items-center">
-                                                                                            <i class="fas fa-arrow-right me-2 text-muted" style="font-size: 0.7rem;"></i>
-                                                                                            {{ $g->nombre }}
+                                                                                        <button type="submit" class="dropdown-item">
+                                                                                            <i class="fas fa-exchange-alt"></i> {{ $g->nombre }}
                                                                                         </button>
                                                                                     </form>
                                                                                 </li>
                                                                             @endif
                                                                         @endforeach
+
+                                                                        <li class="dropdown-divider"></li>
+
+                                                                        <li>
+                                                                            <form action="{{ route('tareas.archivar', $tarea->id) }}" method="POST" class="m-0 p-0">
+                                                                                @csrf @method('PATCH')
+                                                                                <button type="submit" class="dropdown-item">
+                                                                                    <i class="fas fa-archive"></i> Archivar tarea
+                                                                                </button>
+                                                                            </form>
+                                                                        </li>
+                                                                        <li>
+                                                                            <button type="button" class="dropdown-item text-danger" onclick="confirmarEliminarTarea({{ $tarea->id }})">
+                                                                                <i class="fas fa-trash-alt"></i> Eliminar tarea
+                                                                            </button>
+                                                                        </li>
                                                                     </ul>
                                                                 </div>
                                                             </div>
+                                                            
 
                                                             {{-- Título --}}
                                                             <div class="task-text fw-bold text-dark mb-2" style="font-size: 0.85rem; line-height: 1.3;">
@@ -441,7 +572,14 @@
                                                             <div class="task-footer d-flex justify-content-start align-items-center gap-3 pt-2 border-top border-light text-muted" style="font-size: 0.7rem;">
                                                                 <span title="Fecha límite">
                                                                     <i class="far fa-calendar-alt me-1"></i> 
-                                                                    {{ $tarea->fecha_limite ? \Carbon\Carbon::parse($tarea->fecha_limite)->format('d M') : 'Sin fecha' }}
+                                                                    {{ 
+                                                                        $tarea->fecha_limite 
+                                                                            ? \Carbon\Carbon::parse($tarea->fecha_limite)
+                                                                                ->locale('es')
+                                                                                ->translatedFormat('d M')
+                                                                            : 'Sin fecha' 
+                                                                    }}
+
                                                                 </span>
                                                                 <span title="Checklist">
                                                                     <i class="fas fa-tasks me-1"></i>
@@ -480,23 +618,43 @@
 
         <div class="offcanvas offcanvas-end border-0 shadow" tabindex="-1" id="panelTarea" style="width: 600px; border-radius: 24px 0 0 24px;">
             <div class="offcanvas-header p-4 border-bottom bg-light">
-                <div class="d-flex align-items-center">
-                    <span class="badge bg-primary-subtle text-primary me-2 px-3 py-2 rounded-pill" id="badge_grupo">Estado</span>
-                    <h5 class="offcanvas-title fw-bold m-0" id="panelTareaLabel">Detalles de Tarea</h5>
+                <div class="d-flex flex-column">
+                    <h5 class="offcanvas-title fw-bold m-0" id="panelTareaLabel">
+                        Detalles de Tarea
+                    </h5>
+
+                    @isset($tarea)
+                        <small class="text-muted mt-1">
+                            Creada el
+                            {{ $tarea->created_at
+                                ->locale('es')
+                                ->translatedFormat('d \\d\\e F \\d\\e Y') }}
+                        </small>
+                    @endisset
                 </div>
+
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
             </div>
 
+
             <div class="offcanvas-body p-4">
-                <form id="formTareaPrincipal" action="{{ route('tareas.store') }}" method="POST">
+                <form id="formTareaPrincipal" action="{{ route('tareas.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div id="method_field"></div> {{-- Se llenará con PUT al editar --}}
                     <input type="hidden" name="proyecto_id" value="{{ $proyecto->id }}">
                     <input type="hidden" name="grupo_id" id="panel_grupo_id">
 
-                    <input type="text" name="titulo" id="panel_titulo" 
-                        class="form-control form-control-lg border-0 bg-transparent fw-bold p-0 mb-3" 
-                        style="font-size: 1.8rem;" placeholder="INGRESE NOMBRE DE LA TAREA">
+                    <div class="input-container">
+                        <label for="panel_titulo" class="fw-bold mb-2">Nombre de la Tarea</label>
+                        <input type="text" 
+                                name="titulo" 
+                                id="panel_titulo" 
+                                class="form-control form-control-lg fw-bold" 
+                                style="font-size: 1.8rem; height: auto; padding: 10px 15px;" 
+                                placeholder="Escribe algo..."
+                                required 
+                                autofocus>
+                    </div>
 
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
@@ -539,29 +697,60 @@
 
                     <div class="section-checklist mb-5">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold m-0"><i class="fas fa-check-double me-2 text-success"></i>Checklist</h6>
-                            <button type="button" class="btn btn-sm btn-light rounded-pill px-3" onclick="addChecklistItem()">+ Agregar item</button>
+                            <h6 class="fw-bold m-0"><i class="fas fa-check-double me-2" style="color: #13ad20"></i>Checklist</h6>
+                            
                         </div>
                         <div id="panel-checklist-items">
                             {{-- Los items se inyectan aquí --}}
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="button"
+                                    class="btn btn-sm btn-light rounded-pill px-3"
+                                    onclick="addChecklistItem()">
+                                + Agregar item
+                            </button>
                         </div>
                     </div>
 
                     <input type="hidden" id="panel_tarea_id" name="tarea_id">
 
                     <div id="seccion_comentarios" class="mt-4" style="display: none;">
-                        <h6 class="fw-bold mb-3"><i class="far fa-comments me-2 text-info"></i>Comentarios</h6>
+                        <h6 class="fw-bold mb-3"><i class="far fa-comments me-2" style="color: #e06d2a"></i>Comentarios</h6>
                         <div class="chat-container bg-light p-3 rounded-4 mb-3" id="lista_comentarios" style="max-height: 200px; overflow-y: auto;">
                             {{-- Los comentarios se cargan vía AJAX --}}
                         </div>
-                        <div class="input-group">
-                            <input type="text" class="form-control border-0 shadow-sm" placeholder="Escribe un comentario..." id="nuevo_comentario">
-                            <button class="btn btn-primary px-3" type="button" onclick="enviarComentario()"><i class="fas fa-paper-plane"></i></button>
+                        <div class="input-group align-items-center shadow-sm rounded-3 overflow-hidden">
+
+                            <!-- BOTÓN CLIP + FILE DENTRO -->
+                            <label class="comment-clip">
+                                <i class="fas fa-paperclip"></i>
+                                <input type="file"
+                                    id="archivo_comentario"
+                                    hidden
+                                    accept="image/*,.pdf,.doc,.docx,.xlsx,.zip">
+                            </label>
+
+                            <!-- INPUT TEXTO -->
+                            <input type="text"
+                                class="form-control border-0"
+                                placeholder="Escribe un comentario..."
+                                id="nuevo_comentario">
+
+                            <!-- BOTÓN ENVIAR -->
+                            <button class="comment-send"
+                                    type="button"
+                                    onclick="enviarComentario()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+
                         </div>
+
+                        <!-- PREVIEW ARCHIVO -->
+                        <small class="text-muted d-block mt-1 ps-2" id="archivo_seleccionado"></small>
                     </div>
 
                     <div class="sticky-bottom bg-white pt-4 mt-5">
-                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" id="btn_guardar" style="border-radius: 14px;">
+                        <button type="submit" class="btn w-100 py-3 fw-bold shadow-sm" id="btn_guardar" style="border-radius: 14px; background-color:#e06d2a;color:#fff;">
                             Guardar Tarea
                         </button>
                     </div>
@@ -569,57 +758,60 @@
             </div>
         </div>
 
-        <div class="offcanvas offcanvas-end offcanvas-grupo"
-            tabindex="-1"
-            id="offcanvasGrupo">
-
-            <div class="offcanvas-body">
-
-                <!-- Cerrar -->
-                <div class="d-flex justify-content-end mb-3">
-                    <button type="button"
-                            class="btn-close opacity-50"
-                            data-bs-dismiss="offcanvas"></button>
+        <div class="offcanvas offcanvas-end offcanvas-grupo border-0 shadow" 
+            tabindex="-1" 
+            id="offcanvasGrupo" 
+            style="width: 400px;"> <div class="offcanvas-body p-4"> <div class="d-flex justify-content-end">
+                    <button type="button" 
+                            class="btn-close shadow-none" 
+                            data-bs-dismiss="offcanvas" 
+                            aria-label="Close"></button>
                 </div>
 
-                <!-- Contenido -->
-                <div class="pt-3">
-
-                    <h4 class="fw-bold mb-1">Nuevo grupo</h4>
-                    <p class="text-muted small mb-4">
-                        Crea una nueva columna para organizar tus tareas
-                    </p>
+                <div class="pt-2">
+                    <div class="mb-4">
+                        <div class="d-inline-block p-3 rounded-circle mb-3" style="background-color: rgba(224, 109, 42, 0.1);">
+                            <i data-lucide="layers" style="color: #e06d2a; width: 24px; height: 24px;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1" style="color: #334155;">Nuevo grupo</h4>
+                        <p class="text-muted small">
+                            Crea una nueva columna para organizar tus tareas de forma eficiente.
+                        </p>
+                    </div>
 
                     <form id="formGrupo">
                         @csrf
                         <input type="hidden" name="proyecto_id" value="{{ $proyecto->id }}">
 
-                        <input type="text"
-                            name="nombre"
-                            id="nombreGrupo"
-                            class="input-grupo mb-4"
-                            placeholder="Nombre del grupo"
-                            required
-                            autofocus>
+                        <div class="mb-4">
+                            <label for="nombreGrupo" class="form-label small fw-bold text-muted">Nombre del grupo</label>
+                            <input type="text" 
+                                name="nombre" 
+                                id="nombreGrupo" 
+                                class="form-control form-control-lg border-0 bg-light shadow-none custom-input" 
+                                placeholder="Ej: Por hacer, Revisión..." 
+                                required 
+                                autofocus
+                                style="border-radius: 12px; font-size: 1rem;">
+                        </div>
 
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="button"
-                                    class="btn btn-link text-muted px-2"
+                        <div class="d-flex justify-content-end align-items-center gap-3 mt-5">
+                            <button type="button" 
+                                    class="btn btn-link text-decoration-none text-muted fw-semibold p-0" 
                                     data-bs-dismiss="offcanvas">
                                 Cancelar
                             </button>
 
-                            <button type="submit"
-                                    class="btn btn-primary rounded-pill px-4">
-                                Crear
+                            <button type="submit" 
+                                    class="btn shadow-sm px-4 fw-bold" 
+                                    style="background-color: #e06d2a; color: white; border-radius: 10px; padding-top: 10px; padding-bottom: 10px;">
+                                Crear grupo
                             </button>
                         </div>
                     </form>
-
                 </div>
             </div>
         </div>
-
 
         @foreach ($proyecto->grupos as $grupo)
             <div class="modal fade" id="modalEliminarGrupo{{ $grupo->id }}" tabindex="-1">
@@ -976,7 +1168,9 @@
                     // Cargar Checklist existente
                     if (tarea.checklist && tarea.checklist.length > 0) {
                         tarea.checklist.forEach(item => {
-                            addChecklistItem(item.texto, item.completado, item.id);
+                            // Buscamos si este item del checklist tiene archivos (relación morphMany)
+                            const archivoItem = (item.archivos && item.archivos.length > 0) ? item.archivos[0] : null;
+                            addChecklistItem(item.texto, item.completado, item.id, archivoItem);
                         });
                     }
 
@@ -986,12 +1180,28 @@
                         secComentarios.style.display = "block";
                         if (tarea.comentarios && tarea.comentarios.length > 0) {
                             tarea.comentarios.forEach(com => {
+                                let archivoData = null;
+                                
+                                // Verificamos si existen archivos en el comentario
+                                if (com.archivos && com.archivos.length > 0) {
+                                    const arc = com.archivos[0];
+                                    
+                                    // Verificamos si arc.ruta ya es una URL completa o solo el path
+                                    const esUrlCompleta = arc.ruta.startsWith('http');
+                                    
+                                    archivoData = {
+                                        url: esUrlCompleta ? arc.ruta : window.location.origin + '/' + arc.ruta,
+                                        nombre: arc.nombre_original
+                                    };
+                                }
+
                                 listaComentarios.insertAdjacentHTML('beforeend', renderizarComentarioHtml(
                                     com.user ? com.user.name : 'Usuario', 
                                     com.contenido, 
                                     com.fecha_formateada || 'Reciente',
                                     com.id,
-                                    com.user_id
+                                    com.user_id,
+                                    archivoData // <--- Ahora pasará el objeto correctamente
                                 ));
                             });
                         } else {
@@ -1021,57 +1231,131 @@
              * Esta función va FUERA de abrirTarea para que el botón "+ Agregar ítem" 
              * del HTML también pueda llamarla.
              */
-            function addChecklistItem(texto = '', completado = 0, id = null) {
+            function addChecklistItem(texto = '', completado = 0, id = null, archivo = null) {
                 const container = document.getElementById('panel-checklist-items');
-                const itemId = `item-wrapper-${window.checklistIndex}`;
-                
-                // Input oculto fundamental para que el controlador reconozca el ID al actualizar
-                const inputId = id ? `<input type="hidden" name="checklist[${window.checklistIndex}][id]" value="${id}">` : '';
+                const currentIndex = window.checklistIndex;
+                const itemId = `item-wrapper-${currentIndex}`;
+
+                // Lógica para el botón de ver archivo (ahora con margen a la derecha)
+                let btnVerArchivo = '';
+                if (archivo) {
+                    const urlFull = archivo.ruta.startsWith('http') ? archivo.ruta : window.location.origin + '/' + archivo.ruta;
+                    btnVerArchivo = `
+                        <button type="button" class="btn btn-link p-1 border-0 me-2" 
+                                style="color: #4f46e5;"
+                                onclick="event.preventDefault(); event.stopPropagation(); window.open('${urlFull}', '_blank')" 
+                                title="Ver adjunto">
+                            <i class="fas fa-eye fa-lg"></i>
+                        </button>`;
+                }
+
+                const inputId = id
+                    ? `<input type="hidden" name="checklist[${currentIndex}][id]" value="${id}">`
+                    : '';
 
                 const html = `
-                    <div class="input-group mb-2 shadow-sm border-0 align-items-center bg-white p-1" id="${itemId}" style="border-radius: 12px;">
+                    <div class="input-group mb-2 shadow-sm border-0 align-items-center bg-white p-1"
+                        id="${itemId}" style="border-radius:12px;">
+
                         ${inputId}
+
                         <div class="input-group-text border-0 bg-transparent">
-                            <input type="hidden" name="checklist[${window.checklistIndex}][completado]" value="0">
-                            <input class="form-check-input mt-0" type="checkbox" 
-                                name="checklist[${window.checklistIndex}][completado]" 
-                                value="1" ${completado == 1 ? 'checked' : ''} style="cursor:pointer;">
+                            <input type="hidden" name="checklist[${currentIndex}][completado]" value="0">
+                            <input class="form-check-input mt-0 checklist-check"
+                                type="checkbox"
+                                name="checklist[${currentIndex}][completado]"
+                                value="1"
+                                ${completado == 1 ? 'checked' : ''}
+                                style="cursor:pointer; accent-color:#e06d2a;">
                         </div>
-                        <input type="text" name="checklist[${window.checklistIndex}][texto]" 
-                            class="form-control border-0 py-2 bg-transparent" 
-                            value="${texto}" placeholder="Tarea secundaria..." style="font-size: 0.9rem;">
-                        <button class="btn btn-link text-danger border-0 p-2" type="button" 
-                            onclick="document.getElementById('${itemId}').remove()" style="text-decoration: none;">
-                            <i class="fas fa-times-circle fa-lg"></i>
-                        </button>
+
+                        <input type="text"
+                            name="checklist[${currentIndex}][texto]"
+                            class="form-control border-0 py-2 bg-transparent checklist-text"
+                            value="${texto}"
+                            placeholder="Escribe..."
+                            style="font-size:0.9rem;">
+
+                        <div class="d-flex align-items-center px-2">
+                            
+                            ${btnVerArchivo}
+
+                            <label class="btn btn-link text-muted p-1 border-0 mb-0 me-2" title="Adjuntar archivo" style="cursor:pointer;">
+                                <i class="fas fa-images"></i>
+                                <input type="file" name="checklist[${currentIndex}][archivo]" hidden 
+                                    onchange="actualizarIconoChecklist(this)">
+                            </label>
+
+                            <button class="btn btn-link text-danger border-0 p-1"
+                                    type="button"
+                                    onclick="document.getElementById('${itemId}').remove()"
+                                    style="text-decoration:none;">
+                                <i class="fas fa-times-circle fa-lg"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
-                
+
                 container.insertAdjacentHTML('beforeend', html);
+
+                if (completado == 1) {
+                    document.querySelector(`#${itemId} .checklist-text`).classList.add('checklist-completado');
+                }
+
                 window.checklistIndex++;
             }
 
-            function renderizarComentarioHtml(nombre, texto, fecha, comentarioId, autorId) {
-                const botonEliminar = (authUserId == autorId) 
-                    ? `<button type="button" class="btn btn-link text-danger p-0 border-0 ms-3 opacity-50 hover-opacity-100 transition-all" 
-                            onclick="eliminarComentario(event, ${comentarioId})" 
-                            style="text-decoration: none; display: flex; align-items: center;">
+            // Función auxiliar para feedback visual al seleccionar archivo
+            function actualizarIconoChecklist(input) {
+                if (input.files && input.files[0]) {
+                    const icon = input.parentElement.querySelector('i');
+                    icon.classList.remove('fa-paperclip');
+                    icon.classList.add('fa-check-circle', 'text-success');
+                }
+            }
+
+            document.addEventListener('change', function (e) {
+                if (e.target.classList.contains('checklist-check')) {
+                    const wrapper = e.target.closest('.input-group');
+                    const textInput = wrapper.querySelector('.checklist-text');
+
+                    if (e.target.checked) {
+                        textInput.classList.add('checklist-completado');
+                    } else {
+                        textInput.classList.remove('checklist-completado');
+                    }
+                }
+            });
+
+            function renderizarComentarioHtml(nombre, texto, fecha, comentarioId, autorId, archivo = null) {
+
+                const botonEliminar = (authUserId == autorId)
+                    ? `<button type="button" class="btn btn-link text-danger p-0 border-0 ms-3"
+                            onclick="eliminarComentario(event, ${comentarioId})">
                             <i class="fas fa-times-circle fa-lg"></i>
-                    </button>` 
+                    </button>`
                     : '';
 
+                const botonArchivo = archivo
+                    ? `<button type="button" class="btn btn-sm btn-light rounded-pill mt-2" 
+                            onclick="event.preventDefault(); event.stopPropagation(); window.open('${archivo.url}', '_blank')">
+                            <i class="fas fa-paperclip me-1"></i>
+                            Ver archivo
+                    </button>`
+                    : '';
+                    // 👆 Agregamos type="button" y event.preventDefault()
+
                 return `
-                    <div class="mb-3 p-3 bg-white rounded-4 shadow-sm border-start border-info border-4 transition-all" id="comentario-${comentarioId}">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="d-flex align-items-center">
-                                <span class="fw-bold text-dark me-2" style="font-size: 0.95rem;">${nombre}</span>
-                                <span class="text-muted" style="font-size: 0.75rem;">${fecha}</span>
+                    <div class="mb-3 p-3 bg-white rounded-4 shadow-sm" id="comentario-${comentarioId}">
+                        <div class="d-flex justify-content-between mb-2">
+                            <div>
+                                <strong>${nombre}</strong>
+                                <small class="text-muted ms-2">${fecha}</small>
                             </div>
-                            <div class="d-flex align-items-center">
-                                ${botonEliminar}
-                            </div>
+                            ${botonEliminar}
                         </div>
-                        <p class="mb-0 text-secondary" style="font-size: 0.9rem; line-height: 1.5;">${texto}</p>
+                        <p class="mb-1">${texto ?? ''}</p>
+                        ${botonArchivo}
                     </div>
                 `;
             }
@@ -1082,37 +1366,48 @@
                 const input = document.getElementById('nuevo_comentario');
                 const contenido = input.value.trim();
                 const tareaId = document.getElementById('panel_tarea_id').value;
+                const archivo = document.getElementById('archivo_comentario').files[0];
                 const lista = document.getElementById('lista_comentarios');
 
-                if (!contenido || !tareaId) return;
+                if (!contenido && !archivo) return;
+
+                const formData = new FormData();
+                formData.append('tarea_id', tareaId);
+                if (contenido) formData.append('contenido', contenido);
+                if (archivo) formData.append('archivo', archivo);
 
                 try {
                     const response = await fetch('/comentarios-tareas', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            'X-CSRF-TOKEN': document
+                                .querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content')
                         },
-                        body: JSON.stringify({ tarea_id: tareaId, contenido: contenido })
+                        body: formData
                     });
 
                     const data = await response.json();
 
                     if (data.success) {
-                        const mensajeVacio = lista.querySelector('.text-muted');
-                        if (mensajeVacio && mensajeVacio.textContent.includes('No hay')) {
-                            lista.innerHTML = ''; 
-                        }
+                       const nuevoHtml = renderizarComentarioHtml(
+                            data.nombre,
+                            data.contenido,
+                            'Ahora mismo',
+                            data.id,
+                            authUserId, // Asegúrate que esta variable global esté definida
+                            data.archivo  // <--- Laravel devuelve esto como un objeto {nombre, url} o null
+                        );
 
-                        // Usamos el ID devuelto por el servidor para que el botón de borrar funcione de inmediato
-                        const nuevoHtml = renderizarComentarioHtml(data.nombre, data.contenido, 'Ahora mismo', data.id, authUserId);
-                        
                         lista.insertAdjacentHTML('afterbegin', nuevoHtml);
+
                         input.value = '';
-                        lista.scrollTop = 0; 
+                        document.getElementById('archivo_comentario').value = '';
+                        document.getElementById('archivo_seleccionado').innerHTML = '';
                     }
+
                 } catch (error) {
-                    console.error("Error:", error);
+                    console.error(error);
                 }
             }
 
@@ -1175,6 +1470,34 @@
                 });
             }
         </script>
+
+        <script>
+            const fileInput = document.getElementById('archivo_comentario');
+            const label = document.getElementById('archivo_seleccionado');
+
+            fileInput.addEventListener('change', function () {
+                if (this.files.length) {
+                    label.innerHTML = `
+                        <i class="fas fa-paperclip me-1"></i>
+                        <span>${this.files[0].name}</span>
+                        <button type="button"
+                                class="btn btn-link p-0 ms-2 text-danger"
+                                style="font-size:.8rem; text-decoration:none;"
+                                onclick="quitarArchivoComentario()">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
+                    `;
+                } else {
+                    label.innerHTML = '';
+                }
+            });
+
+            function quitarArchivoComentario() {
+                fileInput.value = '';     // 🔥 clave
+                label.innerHTML = '';     // desaparece todo
+            }
+        </script>
+
         
         <!-- NOTIFICACIONES SWEETALERT -->
         @if (Session::has('success'))

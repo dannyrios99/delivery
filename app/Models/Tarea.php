@@ -18,10 +18,12 @@ class Tarea extends Model
         'descripcion',
         'prioridad',
         'fecha_limite',
+        'archivada',
     ];
 
     protected $casts = [
         'fecha_limite' => 'date:Y-m-d',
+        'archivada' => 'boolean',
     ];
 
 

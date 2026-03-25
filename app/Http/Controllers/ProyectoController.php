@@ -25,24 +25,36 @@ class ProyectoController extends Controller
             ->with('success', 'Proyecto creado correctamente');
     }
 
-
-    public function show(Proyecto $proyecto)
+    // Añadimos Request $request
+    public function show(Request $request, Proyecto $proyecto)
     {
         $usuarios = User::all();
 
-        // Añadimos 'grupos.tareas.comentarios.user'
+        // Filtro para las tareas dentro de los grupos
         $proyecto->load([
-            'grupos.tareas.responsables', 
-            'grupos.tareas.checklist',
-            'grupos.tareas.comentarios.user' // <--- NUEVO
+            'grupos.tareas' => function ($query) use ($request) {
+                // SI el usuario quiere ver solo sus tareas:
+                $query->where('archivada', false);
+                $query->when($request->ver == 'mis-tareas', function ($q) {
+                    $q->whereHas('responsables', function ($r) {
+                        $r->where('users.id', auth()->id());
+                    });
+                })
+                // Cargamos las relaciones de la tarea de todos modos
+                ->with(['responsables', 'checklist', 'comentarios.user']);
+            }
         ]);
-        
-        // También lo añadimos aquí para la colección de tareas
-        $tareas = $proyecto->tareas()->with([
-            'responsables', 
-            'checklist',
-            'comentarios.user' // <--- NUEVO
-        ])->get();
+
+        // Opcional: Si usas la variable $tareas suelta en la vista, también la filtramos
+        $tareas = $proyecto->tareas()
+            ->where('archivada', false)
+            ->when($request->ver == 'mis-tareas', function ($query) {
+                $query->whereHas('responsables', function ($q) {
+                    $q->where('users.id', auth()->id());
+                });
+            })
+            ->with(['responsables', 'checklist', 'comentarios.user'])
+            ->get();
 
         return view('proyectos.show', compact('proyecto', 'tareas', 'usuarios'));
     }
@@ -70,5 +82,15 @@ class ProyectoController extends Controller
 
         return redirect()->route('proyectos.index')
             ->with('success', 'Proyecto eliminado');
+    }
+
+    public function historial(Proyecto $proyecto)
+    {
+        $tareas = $proyecto->tareas()
+            ->where('archivada', true)
+            ->with(['grupo', 'responsables'])
+            ->get();
+
+        return view('proyectos.historial', compact('proyecto', 'tareas'));
     }
 }

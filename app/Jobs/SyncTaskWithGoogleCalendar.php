@@ -25,10 +25,18 @@ class SyncTaskWithGoogleCalendar implements ShouldQueue
         $tarea = Tarea::find($this->tareaId);
         $user  = User::find($this->userId);
 
+        // 1. Validar que existan los modelos
         if (!$tarea || !$user) {
             return;
         }
 
+        // 🚩 2. VALIDACIÓN NUEVA: Si no hay fecha límite, no se puede crear evento en Google
+        if (!$tarea->fecha_limite) {
+            \Log::info("Sincronización omitida: La tarea {$this->tareaId} no tiene fecha límite definida.");
+            return;
+        }
+
+        // 3. Validar token de Google
         if (!$user->google_refresh_token) {
             return;
         }
@@ -38,7 +46,7 @@ class SyncTaskWithGoogleCalendar implements ShouldQueue
             $this->refreshToken($user);
         }
 
-        // datos del evento
+        // 4. Datos del evento (Ahora es seguro porque ya sabemos que hay fecha)
         $eventData = [
             'summary' => $tarea->titulo,
             'description' => $tarea->descripcion,
@@ -56,6 +64,7 @@ class SyncTaskWithGoogleCalendar implements ShouldQueue
             ->post('https://www.googleapis.com/calendar/v3/calendars/primary/events', $eventData);
 
         if (!$response->successful()) {
+            \Log::error("Error Google Calendar: " . $response->body());
             return;
         }
 

@@ -149,11 +149,41 @@
 
         @if ($sidebarProyectos->count())
             @foreach ($sidebarProyectos as $proyecto)
-                <li class="{{ $proyectoActualId === $proyecto->id ? 'active-page' : '' }}">
+                @php 
+                    $esActivo = ($proyectoActualId === $proyecto->id); 
+                    $soloMisTareas = (request('ver') == 'mis-tareas');
+                    $colorNegro = '#3a3a3a';
+                @endphp
+
+                <li class="{{ $esActivo ? 'active-page' : '' }}">
                     <a href="{{ route('proyectos.show', $proyecto->id) }}">
                         <i data-lucide="folder"></i>
                         {{ $proyecto->nombre }}
                     </a>
+
+                    @if ($esActivo)
+                        <ul class="list-unstyled ms-4 pb-2" style="font-size: 0.85rem;">
+                            
+                            <li class="mt-1">
+                                <a href="{{ route('proyectos.show', $proyecto->id) }}" 
+                                class="d-flex align-items-center" 
+                                style="text-decoration: none; color: {{ !$soloMisTareas ? $colorNegro : '#6c757d' }}; font-weight: {{ !$soloMisTareas ? 'bold' : 'normal' }};">
+                                    <i data-lucide="layers" class="me-2" style="width: 14px; color: {{ !$soloMisTareas ? $colorNegro : '#6c757d' }};"></i>
+                                    Todo el equipo
+                                </a>
+                            </li>
+
+                            <li class="mt-2">
+                                <a href="{{ route('proyectos.show', [$proyecto->id, 'ver' => 'mis-tareas']) }}" 
+                                class="d-flex align-items-center" 
+                                style="text-decoration: none; color: {{ $soloMisTareas ? $colorNegro : '#6c757d' }}; font-weight: {{ $soloMisTareas ? 'bold' : 'normal' }};">
+                                    <i data-lucide="user" class="me-2" style="width: 14px; color: {{ $soloMisTareas ? $colorNegro : '#6c757d' }};"></i>
+                                    Solo mis tareas
+                                </a>
+                            </li>
+                            
+                        </ul>
+                    @endif
                 </li>
             @endforeach
         @else

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Solicitud;
 use Carbon\Carbon;
-
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {

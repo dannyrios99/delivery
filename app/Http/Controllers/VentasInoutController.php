@@ -189,4 +189,108 @@ class VentasInoutController extends Controller
         ]);
     }
 
+    public function diagnosticoCanceladasCompensadas(Request $request)
+    {
+        // Rango por defecto: últimos 30 días
+        $from = $request->get('from', now()->subDays(29)->toDateString());
+        $to   = $request->get('to', now()->toDateString());
+
+        // ===============================
+        // 1. Estados reales existentes
+        // ===============================
+        $estados = DB::connection('inout')
+            ->table('orders_hotamericas')
+            ->select('stateCurrent', DB::raw('COUNT(*) as total'))
+            ->groupBy('stateCurrent')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // =====================================
+        // 2. Análisis "Cerrado con novedad"
+        // =====================================
+        $novedad = DB::connection('inout')
+            ->table('orders_hotamericas')
+            ->where('stateCurrent', 'Cerrado con novedad')
+            ->whereBetween('createdAt', [
+                $from . ' 00:00:00',
+                $to   . ' 23:59:59'
+            ])
+            ->selectRaw('
+                COUNT(*) as cantidad,
+                SUM(total) as monto,
+                MIN(total) as minimo,
+                MAX(total) as maximo
+            ')
+            ->first();
+
+        // =====================================
+        // 3. Canceladas (control)
+        // =====================================
+        $canceladas = DB::connection('inout')
+            ->table('orders_hotamericas')
+            ->where('stateCurrent', 'Cancelado')
+            ->whereBetween('createdAt', [
+                $from . ' 00:00:00',
+                $to   . ' 23:59:59'
+            ])
+            ->selectRaw('
+                COUNT(*) as cantidad,
+                SUM(total) as monto
+            ')
+            ->first();
+
+        // ===============================
+        // RESPUESTA
+        // ===============================
+        return response()->json([
+            'rango' => [
+                'from' => $from,
+                'to'   => $to,
+            ],
+            'estados_reales' => $estados,
+            'cerrado_con_novedad' => $novedad,
+            'canceladas' => $canceladas,
+        ]);
+    }
+
+    public function consolidadoExcepcionesInout(Request $request)
+    {
+        $from = $request->get('from', now()->subDays(29)->toDateString());
+        $to   = $request->get('to', now()->toDateString());
+
+        $base = DB::connection('inout')
+            ->table('orders_hotamericas')
+            ->whereBetween('createdAt', [
+                $from . ' 00:00:00',
+                $to   . ' 23:59:59'
+            ]);
+
+        // 🔴 Canceladas
+        $canceladas = $base->clone()
+            ->where('stateCurrent', 'Cancelado')
+            ->selectRaw('COUNT(*) as cantidad, SUM(total) as monto')
+            ->first();
+
+        // 🟡 Con novedad (ajustes parciales)
+        $novedades = $base->clone()
+            ->whereIn('stateCurrent', ['Cerrado con novedad', 'Novedad'])
+            ->selectRaw('COUNT(*) as cantidad, SUM(total) as monto')
+            ->first();
+
+        return response()->json([
+            'rango' => compact('from', 'to'),
+            'excepciones' => [
+                'canceladas' => [
+                    'cantidad' => $canceladas->cantidad ?? 0,
+                    'monto'    => $canceladas->monto ?? 0,
+                ],
+                'novedades' => [
+                    'cantidad' => $novedades->cantidad ?? 0,
+                    'monto'    => $novedades->monto ?? 0,
+                ],
+                'impacto_total' =>
+                    ($canceladas->monto ?? 0) + ($novedades->monto ?? 0),
+            ],
+        ]);
+    }
 }

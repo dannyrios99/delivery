@@ -103,7 +103,6 @@ class UpdateGoogleCalendarEvent implements ShouldQueue
         ]);
     }
 
-
     protected function refreshToken(User $user): void
     {
         $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [

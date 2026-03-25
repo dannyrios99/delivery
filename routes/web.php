@@ -20,6 +20,9 @@ use App\Http\Controllers\GrupoTareaController;
 use App\Models\Tarea;
 use App\Http\Controllers\GoogleCalendarController;
 use App\Http\Controllers\MapaEmbebidoController;
+use App\Http\Controllers\ConsolidadosController;
+use App\Http\Controllers\CompensacionesController;
+use App\Http\Controllers\GastosArmiController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -101,10 +104,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/rappi-importar', [VentasRappiController::class, 'importar'])->name('rappi.upload');
     Route::get('/rappi-plantilla', [VentasRappiController::class, 'descargarPlantilla'])->name('rappi.plantilla');
 
-    Route::resource('proyectos', ProyectoController::class)
-        ->only(['store', 'show']);
-        Route::resource('tareas', TareaController::class)
-        ->only(['store', 'update', 'destroy']);
+    //Proyectos
+    Route::resource('proyectos', ProyectoController::class)->only(['store', 'show']);
+    Route::get('proyectos/{proyecto}/historial', [ProyectoController::class, 'historial'])->name('proyectos.historial');
+    Route::resource('tareas', TareaController::class)->only(['store', 'update', 'destroy']);
         Route::get('tareas/{tarea}/checklist', function (Tarea $tarea) {
         return $tarea->checklist()
             ->orderBy('orden')
@@ -115,56 +118,35 @@ Route::middleware('auth')->group(function () {
     Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
     Route::post('/comentarios-tareas', [TareaController::class, 'storeComentario'])->name('comentarios.store');
     Route::delete('/comentarios-tareas/{comentario}', [TareaController::class, 'destroyComentario'])->name('comentarios.destroy');
-
-    Route::get('/google/connect', [GoogleCalendarController::class, 'redirect'])
-        ->middleware('auth')
-        ->name('google.calendar.connect');
-
-    Route::get('/google/callback', [GoogleCalendarController::class, 'callback'])
-        ->name('google.calendar.callback');
-
-
-    Route::patch(
-        'tareas/{tarea}/estado',
-        [TareaController::class, 'cambiarEstado']
-    )->name('tareas.estado');
-
-    Route::resource('grupos-tareas', GrupoTareaController::class)
-    ->only(['store', 'update', 'destroy']);
-
-    Route::resource('proyectos', ProyectoController::class)
-    ->only(['store', 'show']);
+    Route::patch('tareas/{tarea}/estado',[TareaController::class, 'cambiarEstado'])->name('tareas.estado');
+    Route::resource('grupos-tareas', GrupoTareaController::class)->only(['store', 'update', 'destroy']);
     Route::resource('tareas', TareaController::class);
+    Route::patch('/tareas/{tarea}/mover', [TareaController::class, 'mover'])->name('tareas.mover');
+    Route::patch('/tareas/{tarea}/archivar', [TareaController::class, 'archivar'])->name('tareas.archivar');
+    Route::patch('/tareas/{tarea}/restaurar', [TareaController::class, 'restaurar'])->name('tareas.restaurar');
 
-    Route::patch('/tareas/{tarea}/mover', [TareaController::class, 'mover'])
-    ->name('tareas.mover');
+    // Google Calendar
+    Route::get('/google/connect', [GoogleCalendarController::class, 'redirect'])->middleware('auth')->name('google.calendar.connect');
+    Route::get('/google/callback', [GoogleCalendarController::class, 'callback'])->name('google.calendar.callback');
 
-    Route::get('/benchmark-inout', function () {
-        try {
-            $t1 = microtime(true);
+    //Mapas
+    Route::get('/mapas', [MapaEmbebidoController::class, 'index'])->name('mapas.index');
+    Route::get('/mapas/sucursal/{sucursal}', [MapaEmbebidoController::class, 'show'])->name('mapas.show');
+    Route::post('/mapas/asignar', [MapaEmbebidoController::class, 'store'])->name('mapas.store');
 
-            $data = DB::connection('inout')
-                ->table('orders_hotamericas')
-                ->select('id')
-                ->limit(1)
-                ->get();
+    //Consolidados
+    Route::get('/consolidados', [ConsolidadosController::class, 'index'])->name('consolidados.index');
+    Route::get('/inout/diagnostico', [VentasInoutController::class, 'diagnosticoCanceladasCompensadas']);
+    Route::get('/inout/consolidado', [VentasInoutController::class, 'consolidadoExcepcionesInout']);
 
-            $t2 = microtime(true);
-            $elapsed = round($t2 - $t1, 3);
+    //Compensaciones
+    Route::get('/compensaciones', [CompensacionesController::class, 'index'])->name('compensaciones.index');
+    Route::post('/compensaciones', [CompensacionesController::class, 'store'])->name('compensaciones.store');
+    Route::get('/compensaciones/plantilla', [CompensacionesController::class, 'plantilla'])->name('compensaciones.plantilla');
 
-            return "Tiempo de respuesta: {$elapsed} segundos";
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    });
-Route::get('/mapas', [MapaEmbebidoController::class, 'index'])
-    ->name('mapas.index');
-
-Route::get('/mapas/sucursal/{sucursal}', [MapaEmbebidoController::class, 'show'])
-    ->name('mapas.show');
-Route::post('/mapas/asignar', [MapaEmbebidoController::class, 'store'])
-    ->name('mapas.store');
-
+    // Gastos Armi
+    Route::get('/ventas/gastos-armi', [GastosArmiController::class, 'index'])->name('gastos-armi.index');
+    Route::post('/ventas/gastos-armi/importar', [GastosArmiController::class, 'importar'])->name('gastos-armi.importar');
 });
     
 
