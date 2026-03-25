@@ -78,8 +78,6 @@ class DidiOrderController extends Controller
         }
 
 
-
-
         // 📈 2️⃣ Ventas de la SEMANA (en realidad: rango seleccionado)
         $weeklySales = (clone $query)
             ->select(

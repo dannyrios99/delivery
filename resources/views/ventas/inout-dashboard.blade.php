@@ -8,6 +8,7 @@
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ asset('assets/plugins/DataTables/datatables.min.css') }}" rel="stylesheet">
 
     <style>
         .card {
@@ -33,7 +34,7 @@
             width: 38px;
             height: 38px;
             border: 4px solid #ddd;
-            border-top-color: #6c63ff;
+            border-top-color: #e06d2a;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -47,23 +48,209 @@
             min-height: 260px;
         }
 
-        .dropdown-item {
-            border-radius: 6px;
-            padding: 8px 12px;
-        }
-        .dropdown-item:hover {
-            background-color: #f3f4f6;
-        }
-        .dropdown-menu {
-            border: 1px solid #e5e7eb;
-        }
-        .btn-light {
-            background-color: #fff;
-        }
-        .dropdown-header {
-            font-size: 0.78rem;
-            color: #6b7280;
-        }
+/* =====================================================
+   CARD HEADER MODERNO
+===================================================== */
+
+.card-header-modern {
+    border-radius: 18px;
+    background: linear-gradient(145deg, #ffffff, #f9fafb);
+}
+
+/* =====================================================
+   BOTÓN VOLVER
+===================================================== */
+
+.btn-back {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #495057;
+    transition: all 0.25s ease;
+}
+
+.btn-back:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+}
+
+/* =====================================================
+   INFO RANGO
+===================================================== */
+
+.rango-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+}
+
+.rango-fecha {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #111827;
+}
+
+/* =====================================================
+   BOTÓN FILTRO
+===================================================== */
+
+.btn-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    font-weight: 500;
+    transition: all 0.25s ease;
+}
+
+.btn-filter:hover {
+    background: #f1f5f9;
+    transform: translateY(-1px);
+}
+
+/* =====================================================
+   BOTÓN VER GRÁFICAS
+===================================================== */
+
+.btn-graph {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: #f97316;
+    color: white;
+    font-weight: 500;
+    border: none;
+    transition: all 0.25s ease;
+}
+
+.btn-graph:hover {
+    background: #ea580c;
+    transform: translateY(-1px);
+}
+
+/* =====================================================
+   DROPDOWN MODERNO
+===================================================== */
+
+.dropdown-modern {
+    width: 340px;
+    border-radius: 18px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 18px 35px rgba(0,0,0,0.08);
+    overflow: hidden;
+    padding: 0;
+}
+
+/* =====================================================
+   SECCIONES DEL DROPDOWN
+===================================================== */
+
+.dropdown-section {
+    padding-top: 14px;
+}
+
+.dropdown-section-header {
+    font-size: 0.70rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 0 16px 10px 16px;
+}
+
+/* Línea divisora fuerte */
+.dropdown-divider-strong {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 12px 0;
+}
+
+/* =====================================================
+   RANGOS RÁPIDOS (AHORA SÍ PARECEN MENÚ REAL)
+===================================================== */
+
+.quick-ranges {
+    display: flex;
+    flex-direction: column;
+}
+
+.quick-item {
+    background: transparent;
+    border: none;
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #111827;
+    transition: all 0.2s ease;
+}
+
+/* Línea sutil entre cada opción */
+.quick-item + .quick-item {
+    border-top: 1px solid #f1f5f9;
+}
+
+.quick-item:hover {
+    background: #f9fafb;
+    cursor: pointer;
+}
+
+/* Estado activo */
+.quick-item.active {
+    background: #fff7ed;
+    color: #f97316;
+    font-weight: 600;
+}
+
+/* =====================================================
+   INPUTS MODERNOS
+===================================================== */
+
+.form-control-modern {
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 0.85rem;
+}
+
+.form-control-modern:focus {
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+/* =====================================================
+   BOTÓN APLICAR (CTA REAL)
+===================================================== */
+
+.btn-apply {
+    width: 100%;
+    border-radius: 12px;
+    padding: 10px;
+    background: #f97316;
+    color: white;
+    font-weight: 600;
+    border: none;
+    transition: all 0.25s ease;
+}
+
+.btn-apply:hover {
+    background: #ea580c;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(249,115,22,0.25);
+}
+
+.btn-apply:active {
+    transform: translateY(0);
+}
 
     </style>
 </head>
@@ -81,92 +268,268 @@
                 {{-- FILTRO DE FECHAS --}}
                 {{-- ===================== --}}
 
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
+  <!-- CARD HEADER SUPERIOR -->
+<!-- ==============================
+     HEADER SUPERIOR MODERNO
+================================= -->
+<div class="card card-header-modern shadow-sm mb-4 border-0">
+    <div class="card-body px-4 py-3">
 
-                        {{-- Texto del rango seleccionado --}}
-                        <div>
-                            <span class="text-muted small d-block">Mostrando</span>
-                            <span id="label-rango" class="fw-semibold">
-                                {{-- Esto se actualiza por JS --}}
-                            </span>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+            <!-- IZQUIERDA -->
+            <div class="d-flex align-items-center gap-3">
+
+                <!-- Botón volver -->
+                <a href="{{ route('ventas.index') }}" class="btn-back">
+                    <i class="fa-solid fa-arrow-left-long"></i>
+                </a>
+
+                <!-- Información del rango -->
+                <div class="rango-info">
+                    <span class="rango-label">Mostrando</span>
+                    <div id="label-rango" class="rango-fecha">
+                        <!-- Se actualiza dinámicamente con JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- DERECHA -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                <!-- ==============================
+                     DROPDOWN FILTRO
+                ================================= -->
+                <div class="dropdown">
+
+                    <button class="btn btn-filter"
+                            type="button"
+                            id="btnDropdownRango"
+                            data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside"
+                            aria-expanded="false">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span>Filtrar por fecha</span>
+                        <i class="fa-solid fa-chevron-down small"></i>
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-end dropdown-modern"
+                         aria-labelledby="btnDropdownRango">
+
+                        <!-- =========================
+                             RANGOS RÁPIDOS
+                        ========================== -->
+                        <div class="dropdown-section">
+
+                            <div class="dropdown-section-header">
+                                Rangos rápidos
+                            </div>
+
+                            <div class="quick-ranges">
+
+                                <button type="button"
+                                        class="quick-item rango-rapido"
+                                        data-range="today">
+                                    Hoy
+                                </button>
+
+                                <button type="button"
+                                        class="quick-item rango-rapido"
+                                        data-range="last7">
+                                    Últimos 7 días
+                                </button>
+
+                                <button type="button"
+                                        class="quick-item rango-rapido"
+                                        data-range="month">
+                                    Este mes
+                                </button>
+
+                                <button type="button"
+                                        class="quick-item rango-rapido"
+                                        data-range="prevMonth">
+                                    Mes anterior
+                                </button>
+
+                            </div>
+
                         </div>
 
-                        {{-- Dropdown de filtros --}}
-                        <div class="dropdown">
+                        <!-- Línea divisoria fuerte -->
+                        <div class="dropdown-divider-strong"></div>
 
-                            <button class="btn btn-light border d-flex align-items-center gap-2 px-3 py-2"
-                                    type="button"
-                                    id="btnDropdownRango"
-                                    data-bs-toggle="dropdown"
-                                    data-bs-auto-close="outside"
-                                    aria-expanded="false"
-                                    style="border-radius: 999px;">
-                                <i class="fa-regular fa-calendar"></i>
-                                <span>Filtrar por fecha</span>
-                                <i class="fa-solid fa-chevron-down small ms-1"></i>
-                            </button>
+                        <!-- =========================
+                             RANGO PERSONALIZADO
+                        ========================== -->
+                        <div class="dropdown-section">
 
-                            <div class="dropdown-menu dropdown-menu-end shadow-sm p-3"
-                                aria-labelledby="btnDropdownRango"
-                                style="width: 320px; border-radius: 16px;">
+                            <div class="dropdown-section-header">
+                                Rango personalizado
+                            </div>
 
-                                <h6 class="dropdown-header fw-semibold text-muted small">
-                                    Rangos rápidos
-                                </h6>
+                            <div class="range-custom px-3 pb-3">
 
-                                <div class="d-grid gap-2 mb-3">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary text-start rango-rapido" data-range="today">
-                                        Hoy
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary text-start rango-rapido" data-range="last7">
-                                        Últimos 7 días
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary text-start rango-rapido" data-range="month">
-                                        Este mes
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary text-start rango-rapido" data-range="prevMonth">
-                                        Mes anterior
-                                    </button>
-                                </div>
+                                <div class="row g-2 mb-3">
 
-                                <hr class="dropdown-divider">
-
-                                <h6 class="dropdown-header fw-semibold text-muted small">
-                                    Rango personalizado
-                                </h6>
-
-                                <div class="px-1">
-                                    <div class="row g-2 mb-2">
-                                        <div class="col-6">
-                                            <label class="form-label small mb-1">Desde</label>
-                                            <input type="date" id="filtro-from" class="form-control form-control-sm"
-                                                value="{{ $defaultFrom }}">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label small mb-1">Hasta</label>
-                                            <input type="date" id="filtro-to" class="form-control form-control-sm"
-                                                value="{{ $defaultTo }}">
-                                        </div>
+                                    <div class="col-6">
+                                        <label class="form-label small mb-1">Desde</label>
+                                        <input type="date"
+                                               id="filtro-from"
+                                               class="form-control form-control-modern"
+                                               value="{{ $defaultFrom }}">
                                     </div>
 
-                                    <button class="btn btn-primary btn-sm w-100" type="button" id="btn-aplicar-rango">
-                                        Aplicar
-                                    </button>
+                                    <div class="col-6">
+                                        <label class="form-label small mb-1">Hasta</label>
+                                        <input type="date"
+                                               id="filtro-to"
+                                               class="form-control form-control-modern"
+                                               value="{{ $defaultTo }}">
+                                    </div>
+
                                 </div>
+
+                                <button class="btn-apply"
+                                        type="button"
+                                        id="btn-aplicar-rango">
+                                    Aplicar rango
+                                </button>
 
                             </div>
 
                         </div>
 
                     </div>
+
                 </div>
+
+                <!-- ==============================
+                     BOTÓN VER GRÁFICAS
+                ================================= -->
+                <a href="{{ route('ventas.inout') }}"
+                   class="btn btn-graph">
+                    <i class="fa-solid fa-receipt"></i>
+                    Detalle órdenes
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
 
 
 
                 {{-- ===================== --}}
                 {{-- RESUMEN CANAL + SUCURSALES --}}
                 {{-- ===================== --}}
+                
+                <div class="row mb-4">
+                
+                    <!-- Venta total -->
+                    <div class="col-md-4">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted">Venta total</h6>
+                                <h4 id="kpi-venta-total">$0</h4>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Call Center -->
+                    <div class="col-md-4">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted">Call Center</h6>
+                                <h4 id="kpi-call">$0</h4>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Web -->
+                    <div class="col-md-4">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted">Web</h6>
+                                <h4 id="kpi-web">$0</h4>
+                            </div>
+                        </div>
+                    </div>
+                
+                </div>
+                
+        <div class="row mb-4 align-items-stretch">
+        
+            <!-- Frecuencia diaria -->
+            <div class="col-md-6 d-flex">
+                <div class="card shadow-sm w-100 h-100">
+                    <div class="card-body d-flex flex-column">
+        
+                        <h6 class="fw-semibold mb-3">
+                            Frecuencia de clientes únicos
+                        </h6>
+        
+                        <div class="chart-wrapper flex-grow-1">
+                            <div class="loading-overlay">
+                                <div class="spinner"></div>
+                            </div>
+        
+                            <div id="chart-frecuencia-clientes"></div>
+                        </div>
+        
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Frecuencia por hora -->
+            <div class="col-md-6 d-flex">
+                <div class="card shadow-sm w-100 h-100">
+                    <div class="card-body d-flex flex-column">
+        
+                        <h6 class="fw-semibold mb-3">
+                            Clientes únicos por hora
+                            <small class="text-muted">(¿A qué hora regresan?)</small>
+                        </h6>
+        
+                        <div class="chart-wrapper flex-grow-1">
+                            <div class="loading-overlay">
+                                <div class="spinner"></div>
+                            </div>
+        
+                            <div id="chart-frecuencia-hora"></div>
+                        </div>
+        
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+        
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h6 class="fw-semibold mb-3">
+                            Top productos del periodo
+                        </h6>
+            
+                        <div class="table-responsive">
+                            <table id="tabla-top-productos" class="table table-striped table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Producto</th>
+                                        <th class="text-end">Unidades vendidas</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+            
+                    </div>
+                </div>
+            </div>
                 <div class="row mb-4">
 
                     <div class="col-md-4">
@@ -298,10 +661,21 @@
 
     {{-- SCRIPTS --}}
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="{{ asset('assets/plugins/DataTables/datatables.min.js') }}"></script>
+
     <script>
     document.addEventListener('DOMContentLoaded', function () {
+    let diaSeleccionado = null;
+    
+        const btnDropdown = document.getElementById('btnDropdownRango');
 
-        // ===============================
+        function cerrarDropdown() {
+            const instance = bootstrap.Dropdown.getInstance(btnDropdown);
+            if (instance) {
+                instance.hide();
+            }
+        }
+            // ===============================
         // 1) FUNCIONES UTILITARIAS
         // ===============================
 
@@ -320,10 +694,14 @@
         }
 
         function hideLoading() {
-            document.querySelectorAll('.loading-overlay').forEach(o => o.style.display = 'none');
+            document.querySelectorAll('.loading-overlay')
+                .forEach(o => o.style.display = 'none');
+        
             const btn = document.getElementById('btn-aplicar-rango');
             btn.disabled = false;
             btn.innerText = "Aplicar";
+        
+            cerrarDropdown(); // 🔥 AQUÍ se cierra cuando termina todo
         }
 
         function actualizarLabelRango() {
@@ -401,7 +779,7 @@
         // ===============================
 
         const chartCanal = new ApexCharts(document.querySelector("#chart-canal"), {
-            chart: { type: 'pie', height: 260 },
+            chart: { type: 'pie', height: 315 },
             labels: [],
             series: [],
             legend: { position: 'bottom' }
@@ -410,12 +788,243 @@
 
         const chartSucursales = new ApexCharts(document.querySelector("#chart-sucursales"), {
             chart: { type: 'bar', height: 300 },
-            plotOptions: { bar: { horizontal: true }},
+        
+            plotOptions: { 
+                bar: { horizontal: true } 
+            },
+        
             xaxis: { categories: [] },
-            series: [{ name: 'Órdenes', data: [] }]
+        
+            series: [{
+                name: 'Órdenes',
+                data: []
+            }],
+        
+            tooltip: {
+                custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        
+                    const ordenes = series[seriesIndex][dataPointIndex];
+                    const venta = w.config.extraData[dataPointIndex];
+        
+                    return `
+                        <div style="padding:10px">
+                            <strong>${w.globals.labels[dataPointIndex]}</strong><br>
+                            🧾 Órdenes: ${ordenes}<br>
+                            💰 Venta: ${new Intl.NumberFormat('es-CO', {
+                                style: 'currency',
+                                currency: 'COP'
+                            }).format(venta)}
+                        </div>
+                    `;
+                }
+            },
+        
+            extraData: [] // 🔥 aquí guardamos ventas
         });
+        
         chartSucursales.render();
-
+        
+        let chartFrecuenciaClientes = null;
+        
+        const elFrecuencia = document.querySelector("#chart-frecuencia-clientes");
+        
+        if (elFrecuencia) {
+            chartFrecuenciaClientes = new ApexCharts(elFrecuencia, {
+                chart: {
+                    type: 'area',
+                    height: 280,
+                    toolbar: { show: false },
+                    zoom: { enabled: false },
+                    events: {
+                        markerClick: function(event, chartContext, config) {
+        
+                            if (config.dataPointIndex === -1) return;
+        
+                            const fechaSeleccionada =
+                                chartContext.w.globals.categoryLabels[config.dataPointIndex];
+        
+                            cargarDetalleDia(fechaSeleccionada);
+                        }
+                    }
+                },
+        
+                series: [{
+                    name: 'Clientes Únicos',
+                    data: []
+                }],
+        
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+        
+                markers: {
+                    size: 0,
+                    hover: {
+                        size: 6
+                    }
+                },
+        
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.4,
+                        opacityTo: 0.05,
+                        stops: [0, 100]
+                    }
+                },
+        
+                colors: ['#ff5722'],
+        
+                grid: {
+                    show: false
+                },
+        
+                dataLabels: {
+                    enabled: false
+                },
+        
+                xaxis: {
+                    categories: [],
+                    labels: {
+                        show: true,
+                        style: {
+                            fontSize: '12px'
+                        }
+                    },
+                    axisBorder: {
+                        show: true,
+                        color: '#e5e7eb'
+                    },
+                    axisTicks: {
+                        show: false
+                    }
+                },
+                
+                yaxis: {
+                    show: true,
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+        
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + " clientes";
+                        }
+                    }
+                }
+            });
+        
+            chartFrecuenciaClientes.render();
+        }
+        
+        let chartFrecuenciaHora = null;
+        
+        const elHora = document.querySelector("#chart-frecuencia-hora");
+        
+        if (elHora) {
+            chartFrecuenciaHora = new ApexCharts(elHora, {
+                chart: {
+                    type: 'bar',
+                    height: 280,
+                    toolbar: { show: false },
+                    events: {
+                        click: function(event, chartContext, config) {
+        
+                            if (config.dataPointIndex === -1) return;
+        
+                            const categorias = chartContext.w.config.xaxis.categories;
+                            const horaTexto = categorias[config.dataPointIndex];
+        
+                            if (!horaTexto) return;
+        
+                            const horaSeleccionada = parseInt(horaTexto.replace(":00", ""));
+        
+                            if (diaSeleccionado) {
+                                cargarProductosPorHora(diaSeleccionado, horaSeleccionada);
+                            } else {
+                                const from = document.getElementById('filtro-from').value;
+                                const to   = document.getElementById('filtro-to').value;
+        
+                                cargarProductosPorHoraRango(from, to, horaSeleccionada);
+                            }
+                        }
+                    }
+                },
+        
+                series: [{
+                    name: 'Clientes Únicos',
+                    data: []
+                }],
+        
+                plotOptions: {
+                    bar: {
+                        borderRadius: 15,
+                        columnWidth: '70%',
+                        
+                    }
+                },
+        
+                dataLabels: {
+                    enabled: false
+                },
+        
+                xaxis: {
+                    categories: [],
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+        
+                yaxis: {
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        }
+                    }
+                },
+        
+                grid: {
+                    strokeDashArray: 4,
+                    borderColor: '#f1f1f1'
+                },
+        
+                colors: ['#ff5722'],
+        
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + " clientes";
+                        }
+                    }
+                }
+            });
+        
+            chartFrecuenciaHora.render();
+        }
+        
+        let tablaTop = $('#tabla-top-productos').DataTable({
+        pageLength: 10,
+        order: [[2, 'desc']],
+        destroy: true,
+        language: {
+            search: "Buscar:",
+            lengthMenu: "Mostrar _MENU_ registros",
+            info: "Mostrando _START_ a _END_ de _TOTAL_ productos",
+            paginate: {
+                previous: "Anterior",
+                next: "Siguiente"
+            }
+        }
+    });
+            
         const chartFormasPago = new ApexCharts(document.querySelector("#chart-formas-pago"), {
             chart: { type: 'pie', height: 260 },
             labels: [],
@@ -460,6 +1069,7 @@
             series: [{ name: 'Canceladas', data: [] }]
         });
         chartCanceladasSucursales.render();
+        
 
         // ===============================
         // 4) FUNCIÓN QUE TRAE LOS DATOS
@@ -478,8 +1088,17 @@
                     chartCanal.updateOptions({ labels: data.canal.map(i => i.canal) });
                     chartCanal.updateSeries(data.canal.map(i => Number(i.total)));
 
-                    chartSucursales.updateOptions({ xaxis: { categories: data.sucursales.map(i => i.sucursal) }});
-                    chartSucursales.updateSeries([{ data: data.sucursales.map(i => Number(i.total)) }]);
+                    chartSucursales.updateOptions({
+                        xaxis: { 
+                            categories: data.sucursales.map(i => i.sucursal) 
+                        },
+                    
+                        extraData: data.sucursales.map(i => Number(i.total_venta))
+                    });
+                    
+                    chartSucursales.updateSeries([{
+                        data: data.sucursales.map(i => Number(i.total))
+                    }]);
 
                     chartFormasPago.updateOptions({ labels: data.formasPago.map(i => i.forma_pago) });
                     chartFormasPago.updateSeries(data.formasPago.map(i => Number(i.total)));
@@ -489,7 +1108,91 @@
 
                     chartHistDiario.updateOptions({ xaxis: { categories: data.historico.diario.map(i => i.fecha) }});
                     chartHistDiario.updateSeries([{ data: data.historico.diario.map(i => Number(i.total)) }]);
+                    
+                    const freq = data?.historico?.frecuencia_clientes ?? [];
 
+                    chartFrecuenciaClientes.updateOptions({
+                        xaxis: { categories: freq.map(i => i.fecha) }
+                    });
+                    
+                    chartFrecuenciaClientes.updateSeries([{
+                        data: freq.map(i => Number(i.total_clientes))
+                    }]);
+                    
+                    if (chartFrecuenciaHora) {
+
+                    const horas = data?.historico?.frecuencia_hora ?? [];
+                
+                    chartFrecuenciaHora.updateOptions({
+                        xaxis: { categories: horas.map(i => i.hora + ":00") }
+                    });
+                
+                    chartFrecuenciaHora.updateSeries([{
+                        data: horas.map(i => Number(i.total_clientes))
+                    }]);
+                }
+                
+                    const productos = data?.historico?.productos_top ?? [];
+
+                    // Limpiar tabla
+                    tablaTop.clear();
+                    
+                    // Agregar nuevas filas
+                    productos.forEach((item, index) => {
+                        tablaTop.row.add([
+                            index + 1,
+                            item.product,
+                            Number(item.total_vendido).toLocaleString()
+                        ]);
+                    });
+                    
+                    // ==============================
+                    // KPIs
+                    // ==============================
+                    
+                    const kpis = data?.kpis ?? {};
+                    
+                    const total = kpis?.venta_total?.total ?? 0;
+                    
+                    document.getElementById('kpi-venta-total').innerText =
+                        new Intl.NumberFormat('es-CO', {
+                            style: 'currency',
+                            currency: 'COP'
+                        }).format(total);
+                    
+                    // 🔥 separar canales
+                    const canales = kpis?.ventas_canal ?? [];
+                    
+                    let call = 0;
+                    let web = 0;
+                    
+                    canales.forEach(c => {
+                        const nombre = (c.platform || '').toLowerCase();
+                    
+                        if (nombre.includes('call')) {
+                            call = Number(c.total);
+                        }
+                    
+                        if (nombre.includes('web')) {
+                            web = Number(c.total);
+                        }
+                    });
+                    
+                    // pintar
+                    document.getElementById('kpi-call').innerText =
+                        new Intl.NumberFormat('es-CO', {
+                            style: 'currency',
+                            currency: 'COP'
+                        }).format(call);
+                    
+                    document.getElementById('kpi-web').innerText =
+                        new Intl.NumberFormat('es-CO', {
+                            style: 'currency',
+                            currency: 'COP'
+                        }).format(web);
+                    
+                    // Redibujar
+                    tablaTop.draw();
                     chartHistSemanal.updateOptions({ xaxis: { categories: data.historico.semanal.map(i => i.semana) }});
                     chartHistSemanal.updateSeries([{ data: data.historico.semanal.map(i => Number(i.total)) }]);
 
@@ -518,6 +1221,112 @@
                     hideLoading();
                 });
         }
+        
+        function cargarDetalleDia(fecha) {
+            
+            diaSeleccionado = fecha;
+
+            showLoading();
+        
+            fetch(`{{ route('ventas.inout.graficas') }}?from=${fecha}&to=${fecha}`)
+                .then(res => res.json())
+                .then(data => {
+        
+                    // Actualizar gráfica por hora
+                    const horas = data?.historico?.frecuencia_hora ?? [];
+        
+                    chartFrecuenciaHora.updateOptions({
+                        xaxis: { categories: horas.map(i => i.hora + ":00") }
+                    });
+        
+                    chartFrecuenciaHora.updateSeries([{
+                        data: horas.map(i => Number(i.total_clientes))
+                    }]);
+        
+                    // Actualizar tabla productos
+                    const productos = data?.historico?.productos_top ?? [];
+        
+                    tablaTop.clear();
+        
+                    productos.forEach((item, index) => {
+                        tablaTop.row.add([
+                            index + 1,
+                            item.product,
+                            Number(item.total_vendido).toLocaleString()
+                        ]);
+                    });
+        
+                    tablaTop.draw();
+        
+                    hideLoading();
+                })
+                .catch(err => {
+                    console.error(err);
+                    hideLoading();
+                });
+        }
+        
+        
+            function cargarProductosPorHora(fecha, hora) {
+                console.log("Fetching:", fecha, hora);
+    
+        showLoading();
+    
+        fetch(`{{ route('ventas.inout.graficas') }}?from=${fecha}&to=${fecha}&hour=${hora}`)
+            .then(res => res.json())
+            .then(data => {
+    
+                const productos = data?.historico?.productos_top ?? [];
+    
+                tablaTop.clear();
+    
+                productos.forEach((item, index) => {
+                    tablaTop.row.add([
+                        index + 1,
+                        item.product,
+                        Number(item.total_vendido).toLocaleString()
+                    ]);
+                });
+    
+                tablaTop.draw();
+    
+                hideLoading();
+            })
+            .catch(err => {
+                console.error(err);
+                hideLoading();
+            });
+}
+
+function cargarProductosPorHoraRango(from, to, hora) {
+
+    showLoading();
+
+    fetch(`{{ route('ventas.inout.graficas') }}?from=${from}&to=${to}&hour=${hora}`)
+        .then(res => res.json())
+        .then(data => {
+
+            const productos = data?.historico?.productos_top ?? [];
+
+            tablaTop.clear();
+
+            productos.forEach((item, index) => {
+                tablaTop.row.add([
+                    index + 1,
+                    item.product,
+                    Number(item.total_vendido).toLocaleString()
+                ]);
+            });
+
+            tablaTop.draw();
+
+            hideLoading();
+        })
+        .catch(err => {
+            console.error(err);
+            hideLoading();
+        });
+}
 
         // ===============================
         // 5) CARGAR AL ENTRAR
@@ -528,6 +1337,8 @@
 
     });
     </script>
+
+
 
 </body>
 </html>

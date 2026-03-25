@@ -48,6 +48,7 @@ class VentasInoutController extends Controller
             ->editColumn('total', fn($row) => number_format($row->total, 0, ',', '.'))
             ->make(true);
     }
+    
 
     public function dashboard(Request $request)
     {
@@ -90,7 +91,11 @@ class VentasInoutController extends Controller
         // 2. Órdenes por sucursal (pointSale)
         // =======================================
         $sucursales = $conn->clone()
-            ->selectRaw('pointSale as sucursal, COUNT(*) as total')
+            ->selectRaw('
+                pointSale as sucursal, 
+                COUNT(*) as total,
+                SUM(total) as total_venta
+            ')
             ->whereIn('stateCurrent', $estadosFinales)
             ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->groupBy('pointSale')
@@ -168,26 +173,134 @@ class VentasInoutController extends Controller
         $totalCanceladas = $canceladosBase->clone()
             ->selectRaw('COUNT(*) as total_ordenes, SUM(total) as total_valor')
             ->first();
+            
+            // ===================================
+            // 9. Frecuencia clientes únicos por día
+            // ===================================
+            $frecuenciaClientes = $conn->clone()
+                ->selectRaw('DATE(createdAt) as fecha, COUNT(DISTINCT userId) as total_clientes')
+                ->whereIn('stateCurrent', $estadosFinales)
+                ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
+                ->groupBy('fecha')
+                ->orderBy('fecha')
+                ->get();
 
         // ===================================
-        // RESPUESTA COMPLETA
+        // 10. Frecuencia clientes únicos por hora
         // ===================================
-        return response()->json([
-            'canal'      => $canal,
-            'sucursales' => $sucursales,
-            'formasPago' => $formasPago,
-            'entrega'    => $entrega,
-            'historico'  => [
-                'diario'  => $historicoDiario,
-                'semanal' => $historicoSemanal,
-                'mensual' => $historicoMensual,
-            ],
-            'canceladas' => [
-                'resumen'      => $totalCanceladas,
-                'por_sucursal' => $canceladasPorSucursal,
-            ],
-        ]);
-    }
+        $frecuenciaPorHora = $conn->clone()
+            ->selectRaw('HOUR(createdAt) as hora, COUNT(DISTINCT userId) as total_clientes')
+            ->whereIn('stateCurrent', $estadosFinales)
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->groupBy('hora')
+            ->orderBy('hora')
+            ->get();
+            
+        // ===================================
+        // 11. Productos más vendidos por hora
+        // ===================================
+        
+        $hour = $request->get('hour');
+        
+        $topProductosQuery = DB::connection('inout')
+            ->table('orders_hotamericas as o')
+            ->join('items_hotamericas as i', 'o.id', '=', 'i.order_id')
+            ->selectRaw('
+                i.product,
+                SUM(i.amount) as total_vendido
+            ')
+            ->whereIn('o.stateCurrent', $estadosFinales)
+            ->whereBetween('o.createdAt', [$from . ' 00:00:00', $to . ' 23:59:59']);
+        
+        // 🔥 Si viene hora seleccionada, filtramos
+        if (!is_null($hour)) {
+            $topProductosQuery->whereRaw('HOUR(o.createdAt) = ?', [$hour]);
+        }
+        
+        // 🔥 Ejecutamos la consulta final manteniendo tu variable
+        $topProductos = $topProductosQuery
+            ->groupBy('i.product')
+            ->orderByDesc('total_vendido')
+            ->get();
+            
+            // ===================================
+        // 12. Venta total del periodo
+        // ===================================
+        $ventaTotal = $conn->clone()
+            ->selectRaw('SUM(total) as total')
+            ->whereIn('stateCurrent', $estadosFinales)
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->first();
+        
+        
+        // ===================================
+        // 13. Ventas por canal (Call Center / Web)
+        // ===================================
+        $ventasPorCanal = $conn->clone()
+            ->selectRaw('platform, SUM(total) as total')
+            ->whereIn('stateCurrent', $estadosFinales)
+            ->whereBetween('createdAt', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->groupBy('platform')
+            ->get();
+                // ===================================
+                // RESPUESTA COMPLETA
+                // ===================================
+                return response()->json([
+                
+                    // ===================================
+                    // Gráficas principales
+                    // ===================================
+                    'canal'      => $canal,
+                    'sucursales' => $sucursales,
+                    'formasPago' => $formasPago,
+                    'entrega'    => $entrega,
+                
+                    // ===================================
+                    // Histórico de órdenes
+                    // ===================================
+                    'historico'  => [
+                        'diario'  => $historicoDiario,
+                        'semanal' => $historicoSemanal,
+                        'mensual' => $historicoMensual,
+                
+                        // ===================================
+                        // Frecuencias
+                        // ===================================
+                        'frecuencia_clientes' => $frecuenciaClientes,
+                        'frecuencia_hora'     => $frecuenciaPorHora,
+                
+                        // ===================================
+                        // Productos
+                        // ===================================
+                        'productos_top' => $topProductos,
+                    ],
+                
+                    // ===================================
+                    // Cancelaciones
+                    // ===================================
+                    'canceladas' => [
+                        'resumen'      => $totalCanceladas,
+                        'por_sucursal' => $canceladasPorSucursal,
+                    ],
+                
+                    // ===================================
+                    // KPIs del dashboard
+                    // ===================================
+                    'kpis' => [
+                        'venta_total'   => $ventaTotal,
+                        'ventas_canal'  => $ventasPorCanal,
+                    ],
+                
+                    // ===================================
+                    // KPIs específicos (Call / Web)
+                    // ===================================
+                    'kpis_detalle' => [
+                        'call' => $ventaCall ?? null,
+                        'web'  => $ventaWeb ?? null,
+                    ],
+                
+                ]);
+            }
 
     public function diagnosticoCanceladasCompensadas(Request $request)
     {

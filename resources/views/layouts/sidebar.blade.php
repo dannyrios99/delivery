@@ -128,6 +128,14 @@
         </li>
 
         <li class="sidebar-title">
+           GESTION HORAS
+        </li>
+
+        <li @yield('horas')>
+            <a href="{{ route('horas-extras.index') }}"><i data-lucide="clock-plus"></i>Horas Extras</a>
+        </li>
+
+        <li class="sidebar-title">
             DOMICILIOS
         </li>
 
@@ -229,7 +237,7 @@
     </div>
 </div>
 
-@if($showGoogleCalendarModal)
+{{-- @if($showGoogleCalendarModal)
 <div class="modal fade" id="googleCalendarModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content google-style-modal">
@@ -267,7 +275,7 @@
         </div>
     </div>
 </div>
-@endif
+@endif --}}
 
 
 <style>
