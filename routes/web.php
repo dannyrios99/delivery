@@ -149,6 +149,19 @@ Route::get('/mapas/sucursal/{sucursal}', [MapaEmbebidoController::class, 'show']
 Route::post('/mapas/asignar', [MapaEmbebidoController::class, 'store'])
     ->name('mapas.store');
 
+    Route::get('/api/dashboard/kpi-stats', [DashboardController::class, 'getKpiStats'])->name('dashboard.kpi-stats');
+    Route::get('/api/dashboard/movimientos-inout', [DashboardController::class, 'getMovimientosInout'])->name('dashboard.movimientos-inout');
+    Route::get('/api/dashboard/weekly-insights', [DashboardController::class, 'getWeeklyInsights'])->name('dashboard.weekly-insights');
+
+    // Rutas Asíncronas Inout Dashboard
+    Route::get('/api/ventas/inout/kpis', [VentasInoutController::class, 'apiKpis'])->name('ventas.inout.api.kpis');
+    Route::get('/api/ventas/inout/charts', [VentasInoutController::class, 'apiCharts'])->name('ventas.inout.api.charts');
+    Route::get('/api/ventas/inout/historicos', [VentasInoutController::class, 'apiHistoricos'])->name('ventas.inout.api.historicos');
+    Route::get('/api/ventas/inout/frecuencias', [VentasInoutController::class, 'apiFrecuencias'])->name('ventas.inout.api.frecuencias');
+    Route::get('/api/ventas/inout/horarios', [VentasInoutController::class, 'apiHorarios'])->name('ventas.inout.api.horarios');
+    Route::get('/api/ventas/inout/top-productos', [VentasInoutController::class, 'apiTopProductos'])->name('ventas.inout.api.top-productos');
+    Route::get('/api/ventas/inout/canceladas', [VentasInoutController::class, 'apiCanceladas'])->name('ventas.inout.api.canceladas');
+
 });
     
 
